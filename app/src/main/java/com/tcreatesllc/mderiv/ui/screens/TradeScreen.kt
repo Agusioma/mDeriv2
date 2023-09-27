@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +28,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,17 +39,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcreatesllc.mderiv.R
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tcreatesllc.mderiv.ui.charts.ComposeChart1
+import com.tcreatesllc.mderiv.viewmodels.ShowcaseViewModel
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TradeScreen() {
+fun TradeScreen(viewModel: ShowcaseViewModel = viewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val screenWidth = LocalConfiguration.current.screenWidthDp
 
@@ -99,32 +105,39 @@ fun TradeScreen() {
                 }
             ) {
                 // text field
-                OutlinedTextField(
+                CompositionLocalProvider(
+                    LocalTextInputService provides null
+                ) {
+                    OutlinedTextField(
 
-                    value = selectedItem,
-                    onValueChange = {},
-                    textStyle = TextStyle(
-                        fontFamily = mDerivDigitFamily,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center
-                    ),
-                    readOnly = true,
-                    label = { Text(text = "USD", fontFamily = mDerivDigitFamily) },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = isExpanded
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(
-                                id = R.drawable.coin_vertical_svgrepo_com
-                            ), ""
-                        )
-                    },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(containerColor = Color.Transparent),
-                    modifier = Modifier.menuAnchor()
-                )
+                        value = selectedItem,
+                        onValueChange = {},
+                        textStyle = TextStyle(
+                            fontFamily = mDerivDigitFamily,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        ),
+                        readOnly = true,
+                        label = { Text(text = "A/C Number", fontFamily = mDerivDigitFamily) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = isExpanded
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(
+                                    id = R.drawable.coin_vertical_svgrepo_com
+                                ), ""
+                            )
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        modifier = Modifier.menuAnchor()
+                    )
+                }
                 // menu
                 ExposedDropdownMenu(
                     expanded = isExpanded,
@@ -165,6 +178,10 @@ fun TradeScreen() {
                     Text(text = "Item: ${index + 1}")
                 }
             }
+            ComposeChart1(
+                chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
+                //mods = Modifier.align(Alignment.CenterHorizontally)
+            )
 
         }
         Row(
@@ -180,32 +197,39 @@ fun TradeScreen() {
                 }
             ) {
                 // text field
-                OutlinedTextField(
+                CompositionLocalProvider(
+                    LocalTextInputService provides null
+                ) {
+                    OutlinedTextField(
 
-                    value = selectedItemMarkets,
-                    onValueChange = {},
-                    textStyle = TextStyle(
-                        fontFamily = mDerivDigitFamily,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Start
-                    ),
-                    readOnly = true,
-                    label = { Text(text = "Markets", fontFamily = mDerivDigitFamily) },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = isExpandedMarkets
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(
-                                id = R.drawable.market_basket_svgrepo_com
-                            ), ""
-                        )
-                    },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(containerColor = Color.Transparent),
-                    modifier = Modifier.menuAnchor()
-                )
+                        value = selectedItemMarkets,
+                        onValueChange = {},
+                        textStyle = TextStyle(
+                            fontFamily = mDerivDigitFamily,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Start
+                        ),
+                        readOnly = true,
+                        label = { Text(text = "Markets", fontFamily = mDerivDigitFamily) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = isExpandedMarkets
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(
+                                    id = R.drawable.market_basket_svgrepo_com
+                                ), ""
+                            )
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        modifier = Modifier.menuAnchor()
+                    )
+                }
                 // menu
                 ExposedDropdownMenu(
                     expanded = isExpandedMarkets,
