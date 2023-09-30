@@ -49,7 +49,7 @@ fun TextTitleCaptionSmall(caption: String,
     Text(
         text = caption,
         color = MaterialTheme.colorScheme.primary,
-        fontFamily = mDerivTextFamily,
+        fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
         fontSize = 20.sp
@@ -63,7 +63,7 @@ fun TextTitleCaptionSmallBold(caption: String,
     Text(
         text = caption,
         color = MaterialTheme.colorScheme.primary,
-        fontFamily = mDerivTextFamily,
+        fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
@@ -78,13 +78,27 @@ fun TextSubTitle(caption: String,
     Text(
         text = caption,
         color = MaterialTheme.colorScheme.primary,
-        fontFamily = mDerivTextFamily,
+        fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
         fontSize = 15.sp
     )
 }
 
+@Composable
+fun TextSubTitleBold(caption: String,
+                 mods: Modifier
+) {
+    Text(
+        text = caption,
+        color = MaterialTheme.colorScheme.primary,
+        fontFamily = mDerivDigitFamily,
+        modifier = mods,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start,
+        fontSize = 15.sp
+    )
+}
 val mDerivDigitFamily = FontFamily(
 
     Font(R.font.carlito_regular, FontWeight.Light),
