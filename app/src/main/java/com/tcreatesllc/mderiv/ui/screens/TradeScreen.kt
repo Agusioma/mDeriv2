@@ -1,5 +1,6 @@
 package com.tcreatesllc.mderiv.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,7 +66,32 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val screenWidth = LocalConfiguration.current.screenWidthDp
 
-    val listItems = arrayOf("VR4257389", "CR3572933", "CR1123412", "CR3518444")
+    var accBalance = viewModel.accountBalance.observeAsState(0.0f)
+    var accCurr = viewModel.accountCurr.observeAsState("EUR")
+    var accList = viewModel.accountList.observeAsState()
+
+    var listItems:MutableMap<String, String> = mutableMapOf(Pair("Account", "oo"))
+
+    accList.value?.forEach { it ->
+        var accno = it.get("loginid")
+        var label = ""
+        if(it.get("is_virtual") == "0"){
+            label = "REAL"
+        }else{
+            label = "DEMO"
+        }
+
+        if (accno != null) {
+            listItems.put("${accno.substring(1, accno.length - 1)} (${label})", "${accno}")
+        }
+        listItems.remove("Account")
+
+    }
+
+    Log.d("oooo", listItems.keys.toString())
+    //var accBalance: Mu
+    // = viewModel.accountBalance.value
+    //val listItems = arrayOf("VR4257389", "CR3572933", "CR1123412", "CR3518444")
     val listItemsMarkets = arrayOf(
         "Vol. 10(1s) Index",
         "Vol. 10 Index",
@@ -84,7 +111,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
     // remember the selected item
     var selectedItem by remember {
-        mutableStateOf(listItems[0])
+        mutableStateOf("-----")
     }
 
     var isExpandedMarkets by remember {
@@ -154,7 +181,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
           */
             Spacer(Modifier.weight(3f))
 
-            TextTitleCaptionSmall("1,884.98 USD", txtTitleMods)
+            TextTitleCaptionSmall("${accBalance.value} ${accCurr.value}", txtTitleMods)
             // box
             ExposedDropdownMenuBox(
                 modifier = Modifier.wrapContentSize(),
@@ -167,35 +194,37 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
-                    OutlinedTextField(
+                    selectedItem?.let {
+                        OutlinedTextField(
 
-                        value = selectedItem,
-                        onValueChange = {},
-                        textStyle = TextStyle(
-                            fontFamily = mDerivDigitFamily,
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
-                        ),
-                        readOnly = true,
-                        label = { Text(text = "Account", fontFamily = mDerivDigitFamily) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                expanded = isExpanded
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(
-                                    id = R.drawable.coin_vertical_svgrepo_com
-                                ), ""
-                            )
-                        },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent
-                        ),
-                        modifier = Modifier.menuAnchor()
-                    )
+                            value = it.substring(1, it.length - 1),
+                            onValueChange = {},
+                            textStyle = TextStyle(
+                                fontFamily = mDerivDigitFamily,
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            ),
+                            readOnly = true,
+                            label = { Text(text = "Account", fontFamily = mDerivDigitFamily) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = isExpanded
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = R.drawable.coin_vertical_svgrepo_com
+                                    ), ""
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier.menuAnchor()
+                        )
+                    }
                 }
                 // menu
                 ExposedDropdownMenu(
@@ -207,7 +236,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    text = selectedOption,
+                                    text = selectedOption.key,
                                     fontFamily = mDerivDigitFamily,
                                     fontSize = 20.sp,
                                     textAlign = TextAlign.Center,
@@ -215,7 +244,8 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                 )
                             },
                             onClick = {
-                                selectedItem = selectedOption
+                                selectedItem = selectedOption.value
+                                Log.d("CLICKED", selectedItem!!)
                                 isExpanded = false
                             })
                     }
@@ -414,7 +444,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
             ModalBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height((screenHeight*0.9).dp)
+                    .height((screenHeight * 0.9).dp)
                     .padding(top = 0.dp),
                 onDismissRequest = {
                     showBottomSheet = false

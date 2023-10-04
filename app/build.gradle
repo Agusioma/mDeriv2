@@ -75,6 +75,11 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.10.1'
 
+    implementation "androidx.compose.runtime:runtime:1.5.2"
+    implementation "androidx.compose.runtime:runtime-livedata:1.5.2"
+    implementation "androidx.compose.runtime:runtime-rxjava2:1.5.2"
+
+
     // For Jetpack Compose.
     implementation("com.patrykandpatrick.vico:compose:1.11.1")
 

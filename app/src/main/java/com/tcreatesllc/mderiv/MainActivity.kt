@@ -1,5 +1,6 @@
 package com.tcreatesllc.mderiv
 
+import BalanceStreamer
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -18,9 +19,14 @@ import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import com.tcreatesllc.mderiv.websockets.AuthorizeUser
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -29,16 +35,20 @@ import okhttp3.WebSocketListener
 class MainActivity : ComponentActivity() {
     private lateinit var viewModel: MainViewModel
 
-    private lateinit var webSocketListener: WebSocketListener
+    private lateinit var balanceStreamWSlistener: WebSocketListener
+    private lateinit var authWSlistener: WebSocketListener
     private val okHttpClient = OkHttpClient()
-    private var webSocket: WebSocket? = null
+    private var authWebSocket: WebSocket? = null
+    private var balanceStreamWebSocket: WebSocket? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        webSocketListener = AuthorizeUser(viewModel)
+
+        authWSlistener = AuthorizeUser(viewModel)
+        balanceStreamWSlistener = BalanceStreamer(viewModel)
 
         //initialize session
-        webSocket = okHttpClient.newWebSocket(initWebSocketSession(), webSocketListener)
+        authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
 
         setContent {
             MDerivTheme {
@@ -53,14 +63,47 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        webSocket?.send("{\n" +
-                "  \"authorize\": \"a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN\"\n" +
-                "}")
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"authorize\": \"a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN\"\n" +
+                    "}"
+        )
+        lifecycleScope.launch {
+            while (true) {
+                delay(4000)
+                pingDeriv()
+            }
+        }
+        streamBalance()
+
+
         // ATTENTION: This was auto-generated to handle app links.
         val appLinkIntent: Intent = intent
         val appLinkAction: String? = appLinkIntent.action
         val appLinkData: Uri? = appLinkIntent.data
         handleIntent(intent)
+    }
+
+    private fun streamBalance() {
+        //okHttpClient.
+       Thread.sleep(3000)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"balance\": 1,\n" +
+                    "  \"subscribe\": 1\n" +
+                    "}"
+        )
+    }
+
+
+    private suspend fun pingDeriv(){
+
+        //delay(1000)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"ping\": 1\n" +
+                    "}"
+        )
     }
 
     private fun initWebSocketSession(): Request {
@@ -70,6 +113,7 @@ class MainActivity : ComponentActivity() {
             .url(websocketURL)
             .build()
     }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
@@ -90,6 +134,7 @@ class MainActivity : ComponentActivity() {
             }
         }*/
     }
+
     fun hideSystemUIAndDisableAutorotation() {
 
         //Hides the ugly action bar at the top
