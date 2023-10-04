@@ -1,8 +1,7 @@
 package com.tcreatesllc.mderiv.viewmodels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.patrykandpatrick.vico.core.entry.ChartEntryModel
@@ -10,12 +9,21 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.composed.ComposedChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.composed.plus
 import com.patrykandpatrick.vico.core.util.RandomEntriesGenerator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class ShowcaseViewModel : ViewModel() {
+class MainViewModel : ViewModel() {
+
+    //websockets-START
+    private val _socketStatus = MutableLiveData(false)
+    val socketStatus: LiveData<Boolean> = _socketStatus
+
+    private val _messages = MutableLiveData<String>()
+    val messages: LiveData<String> = _messages
+    //websockets- END
 
     private val generator = RandomEntriesGenerator(
         xRange = 0..GENERATOR_X_RANGE_TOP,
@@ -36,8 +44,18 @@ class ShowcaseViewModel : ViewModel() {
     internal val composedChartEntryModelProducer: ComposedChartEntryModelProducer<ChartEntryModel> =
         multiDataSetChartEntryModelProducer + chartEntryModelProducer
 
+//ws methods - START
+    fun addMessage(message:  String) = viewModelScope.launch(Dispatchers.Main) {
+        if (_socketStatus.value == true) {
+            _messages.value = message
+        }
+    }
 
+    fun setStatus(status: Boolean) = viewModelScope.launch(Dispatchers.Main) {
+        _socketStatus.value = status
+    }
 
+    //ws methods - END
     init {
         viewModelScope.launch {
             while (currentCoroutineContext().isActive) {
