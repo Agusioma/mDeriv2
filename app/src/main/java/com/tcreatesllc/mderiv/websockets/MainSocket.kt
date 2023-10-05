@@ -8,7 +8,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 
-class AuthorizeUser(
+class MainSocket(
     private val viewModel: MainViewModel
 ) : WebSocketListener() {
 
@@ -32,6 +32,9 @@ class AuthorizeUser(
                 viewModel.addBalanceStream(text)
             } else if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
                 viewModel.addPrepopulationTicks(text)
+            }else if (JsonParser().parse(text).asJsonObject.get("tick") !== null) {
+                viewModel.processTickStream(text)
+
             }
         }
         //Creating JSONObject from String using parser

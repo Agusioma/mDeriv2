@@ -38,7 +38,7 @@ fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer, viewModel: M
             persistentMarkers = remember(marker) {
                 mapOf(PERSISTENT_MARKER_X to marker)
             },
-            axisValuesOverrider = AxisValuesOverrider.fixed(minY = viewModel.GENERATOR_Y_RANGE_BOTTOM.value)
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = viewModel.GENERATOR_Y_RANGE_BOTTOM.value, maxX = 605f)
             )
         Chart(
 
@@ -46,7 +46,7 @@ fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer, viewModel: M
             chartModelProducer = chartEntryModelProducer,
             endAxis = rememberEndAxis(guideline = null),
             //startAxis = rememberStartAxis(guideline = null, axis = null, tick=null, label=null),
-           // bottomAxis = rememberBottomAxis(  axis = null, tick=null, label=null),
+            bottomAxis = rememberBottomAxis( tick=null  ,label = null, guideline = null),
             marker = marker,
             runInitialAnimation = false,
             isZoomEnabled = true,
@@ -60,7 +60,7 @@ fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer, viewModel: M
 }
 
 private const val COLOR_1_CODE = 0xffa485e0
-private const val PERSISTENT_MARKER_X = 3599f
+private const val PERSISTENT_MARKER_X = 599f
 
 private val color1 = Color(COLOR_1_CODE)
 private val chartColors = listOf(color1)

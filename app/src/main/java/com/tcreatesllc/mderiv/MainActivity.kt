@@ -19,12 +19,10 @@ import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
-import com.tcreatesllc.mderiv.websockets.AuthorizeUser
+import com.tcreatesllc.mderiv.websockets.MainSocket
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -44,7 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        authWSlistener = AuthorizeUser(viewModel)
+        authWSlistener = MainSocket(viewModel)
         balanceStreamWSlistener = BalanceStreamer(viewModel)
 
         //initialize session
@@ -70,15 +68,16 @@ class MainActivity : ComponentActivity() {
         )
         lifecycleScope.launch {
             while (true) {
-                delay(4000)
+                delay(1000)
 
-                pingDeriv()
+                getPrepopulationTicks("1HZ100V")
             }
         }
         streamBalance()
 
-        getPrepopulationTicks("1HZ100V")
 
+
+        //streamTicks("1HZ100V")
 
         // ATTENTION: This was auto-generated to handle app links.
         val appLinkIntent: Intent = intent
@@ -99,15 +98,25 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getPrepopulationTicks(marketIndex: String){
-        Thread.sleep(4000)
+        //Thread.sleep(1000)
         authWebSocket?.send(
             "{\n" +
                     "  \"ticks_history\": \"${marketIndex}\",\n" +
                     "  \"adjust_start_time\": 1,\n" +
-                    "  \"count\": 3600,\n" +
+                    "  \"count\": 600,\n" +
                     "  \"end\": \"latest\",\n" +
                     "  \"start\": 1,\n" +
                     "  \"style\": \"ticks\"\n" +
+                    "}"
+        )
+    }
+
+    private fun streamTicks(marketIndex: String){
+        Thread.sleep(5000)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"ticks\": \"${marketIndex}\",\n" +
+                    "  \"subscribe\": 1\n" +
                     "}"
         )
     }
