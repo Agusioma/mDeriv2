@@ -339,6 +339,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
             ComposeChart1(
                 chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
+                viewModel
                 //mods = Modifier.align(Alignment.CenterHorizontally)
             )
 

@@ -71,10 +71,13 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             while (true) {
                 delay(4000)
+
                 pingDeriv()
             }
         }
         streamBalance()
+
+        getPrepopulationTicks("1HZ100V")
 
 
         // ATTENTION: This was auto-generated to handle app links.
@@ -95,6 +98,19 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun getPrepopulationTicks(marketIndex: String){
+        Thread.sleep(4000)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"ticks_history\": \"${marketIndex}\",\n" +
+                    "  \"adjust_start_time\": 1,\n" +
+                    "  \"count\": 3600,\n" +
+                    "  \"end\": \"latest\",\n" +
+                    "  \"start\": 1,\n" +
+                    "  \"style\": \"ticks\"\n" +
+                    "}"
+        )
+    }
 
     private suspend fun pingDeriv(){
 

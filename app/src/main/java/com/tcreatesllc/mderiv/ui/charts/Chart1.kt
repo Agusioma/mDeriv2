@@ -16,13 +16,17 @@ import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.compose.style.currentChartStyle
 import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
 import com.patrykandpatrick.vico.core.chart.copy
+import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.scroll.AutoScrollCondition
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
+import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 
 
 @Composable
-fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer/*, mods: Modifier*/) {
+fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer, viewModel: MainViewModel/*, mods: Modifier*/) {
     val marker = rememberMarker()
     ProvideChartStyle(rememberChartStyle(chartColors)) {
 
@@ -33,15 +37,16 @@ fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer/*, mods: Modi
             },
             persistentMarkers = remember(marker) {
                 mapOf(PERSISTENT_MARKER_X to marker)
-            }
+            },
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = viewModel.GENERATOR_Y_RANGE_BOTTOM.value)
             )
         Chart(
 
             chart = remember(lineChart) {lineChart },
             chartModelProducer = chartEntryModelProducer,
-            endAxis = rememberEndAxis(),
-            startAxis = rememberStartAxis(guideline = null, axis = null, tick=null, label=null),
-            bottomAxis = rememberBottomAxis(  axis = null, tick=null, label=null),
+            endAxis = rememberEndAxis(guideline = null),
+            //startAxis = rememberStartAxis(guideline = null, axis = null, tick=null, label=null),
+           // bottomAxis = rememberBottomAxis(  axis = null, tick=null, label=null),
             marker = marker,
             runInitialAnimation = false,
             isZoomEnabled = true,
@@ -55,7 +60,7 @@ fun ComposeChart1(chartEntryModelProducer: ChartEntryModelProducer/*, mods: Modi
 }
 
 private const val COLOR_1_CODE = 0xffa485e0
-private const val PERSISTENT_MARKER_X = 300f
+private const val PERSISTENT_MARKER_X = 3599f
 
 private val color1 = Color(COLOR_1_CODE)
 private val chartColors = listOf(color1)

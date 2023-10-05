@@ -10,7 +10,7 @@ import okhttp3.WebSocketListener
 
 class AuthorizeUser(
     private val viewModel: MainViewModel
-): WebSocketListener() {
+) : WebSocketListener() {
 
     private val TAG = "Test"
 
@@ -25,12 +25,13 @@ class AuthorizeUser(
         super.onMessage(webSocket, text)
 
         val parser = JsonParser().parse(text).asJsonObject
-        if(JsonParser().parse(text).asJsonObject.get("ping") == null) {
-            if (JsonParser().parse(text).asJsonObject.get("balance") == null) {
+        if (JsonParser().parse(text).asJsonObject.get("ping") == null) {
+            if (JsonParser().parse(text).asJsonObject.get("authorize") !== null) {
                 viewModel.addAuthDetails(text)
-                Log.d(TAG, "onMessage2: ${text}")
-            } else {
+            } else if (JsonParser().parse(text).asJsonObject.get("balance") !== null) {
                 viewModel.addBalanceStream(text)
+            } else if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
+                viewModel.addPrepopulationTicks(text)
             }
         }
         //Creating JSONObject from String using parser
