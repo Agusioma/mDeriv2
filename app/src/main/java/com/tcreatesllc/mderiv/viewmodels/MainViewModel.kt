@@ -2,10 +2,13 @@ package com.tcreatesllc.mderiv.viewmodels
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,6 +39,15 @@ class MainViewModel : ViewModel() {
     val socketStatus: LiveData<Boolean> = _socketStatus
 
     var currentTradeSymbol: MutableLiveData<String> = MutableLiveData("1HZ100V")
+    var currentTradeSymbolKey: MutableLiveData<String> = MutableLiveData("Volatility 100 (1s) Index")
+    var textStake: MutableLiveData<String> = MutableLiveData("")
+    var textSL: MutableLiveData<String> = MutableLiveData("")
+    var textSP: MutableLiveData<String> = MutableLiveData("")
+    var textMul: MutableLiveData<Double> = MutableLiveData(100.0)
+   /* var textStake by rememberSaveable { mutableStateOf("") }
+    var textSL by rememberSaveable { mutableStateOf("") }
+    var textSP by rememberSaveable { mutableStateOf("") }
+    var textMul by rememberSaveable { mutableStateOf(100.0) }*/
 
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages

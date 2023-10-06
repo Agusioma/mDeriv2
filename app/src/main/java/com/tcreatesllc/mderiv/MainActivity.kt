@@ -84,8 +84,6 @@ class MainActivity : ComponentActivity() {
         }
         streamBalance()
 
-
-
         //streamTicks("1HZ100V")
 
         // ATTENTION: This was auto-generated to handle app links.

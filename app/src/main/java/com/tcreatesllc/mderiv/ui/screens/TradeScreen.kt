@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -40,6 +41,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +53,7 @@ import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -156,7 +159,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
     // remember the selected item
     var selectedItemMarkets by remember {
-        mutableStateOf("Volatility 100 (1s) Index")
+        mutableStateOf(viewModel.currentTradeSymbolKey.value)
     }
 
     var isExpandedMultipliers by remember {
@@ -174,7 +177,13 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
 
     var (spCheckedState, spOnStateChange) = remember { mutableStateOf(false) }
-    var (slCheckedState, slOnStateChange) = remember { mutableStateOf(false) }
+    var (slCheckedState, slOnStateChange) = remember { mutableStateOf(true) }
+
+    var textStake by rememberSaveable { mutableStateOf("") }
+    var textSL by rememberSaveable { mutableStateOf("") }
+    var textSP by rememberSaveable { mutableStateOf("") }
+    var textMul by rememberSaveable { mutableStateOf(100.0) }
+
 
     //var stoplosscheckstate = remember { mutableStateOf(true) }
     //var
@@ -402,35 +411,37 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
-                    OutlinedTextField(
+                    selectedItemMarkets?.let {
+                        OutlinedTextField(
 
-                        value = selectedItemMarkets,
-                        onValueChange = {},
-                        textStyle = TextStyle(
-                            fontFamily = mDerivDigitFamily,
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Start
-                        ),
-                        readOnly = true,
-                        label = { Text(text = "Markets", fontFamily = mDerivDigitFamily) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                expanded = isExpandedMarkets
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(
-                                    id = R.drawable.market_basket_svgrepo_com
-                                ), ""
-                            )
-                        },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent
-                        ),
-                        modifier = Modifier.menuAnchor()
-                    )
+                            value = it,
+                            onValueChange = {},
+                            textStyle = TextStyle(
+                                fontFamily = mDerivDigitFamily,
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Start
+                            ),
+                            readOnly = true,
+                            label = { Text(text = "Markets", fontFamily = mDerivDigitFamily) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = isExpandedMarkets
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = R.drawable.market_basket_svgrepo_com
+                                    ), ""
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier.menuAnchor()
+                        )
+                    }
                 }
                 // menu
                 ExposedDropdownMenu(
@@ -452,6 +463,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                             onClick = {
                                 selectedItemMarkets = selectedOption.key
                                 viewModel.currentTradeSymbol.value = selectedOption.value
+                                viewModel.currentTradeSymbolKey.value = selectedOption.key
                                 isExpandedMarkets = false
                             })
                     }
@@ -482,7 +494,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
             ModalBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height((screenHeight * 0.9).dp)
+                    .height((screenHeight * 0.97).dp)
                     .padding(top = 0.dp),
                 onDismissRequest = {
                     showBottomSheet = false
@@ -519,8 +531,15 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.Start
                         ) {
+
                             OutlinedTextField(
-                                value = "",
+                                value = textStake,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                maxLines = 1,
+                                onValueChange = {
+                                    textStake = it
+                                    viewModel.textStake.value = textStake
+                                },
                                 placeholder = {
                                     Text(
                                         "0.0",
@@ -528,7 +547,6 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                         color = Color.LightGray
                                     )
                                 },
-                                onValueChange = { },
                                 label = { Text("Stake", fontFamily = mDerivDigitFamily) }
                             )
                             ExposedDropdownMenuBox(
@@ -588,6 +606,10 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                             },
                                             onClick = {
                                                 selectedItemMultipliers = selectedOption
+                                                textMul = selectedOption.substring(1).toDouble()
+
+                                                viewModel.textMul.value = textMul
+                                                //Log.d("SMI", selectedOption.substring(1))
                                                 isExpandedMultipliers = false
                                             })
                                     }
@@ -604,26 +626,16 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                         ) {
 
                             TextSubTitle(
-                                "Win 10% of your stake for every 1% rise in Volatility 100 (1s) Index.",
+                                "Win ${textMul.toInt()}% of your stake for every 1% rise in ${viewModel.currentTradeSymbolKey.value}.",
                                 txtTitleModsCenter
                             )
-                            Row(modifier = Modifier.width((screenWidth * 0.2).dp)) {
-                                TextSubTitle(
-                                    "Stop out:",
-                                    txtTitleModsStart.padding(top = 0.dp, bottom = 0.dp)
-                                )
-                                TextSubTitleBold(
-                                    "200 USD",
-                                    txtTitleMods.padding(top = 0.dp, bottom = 0.dp)
-                                )
-                            }
                             Row(modifier = Modifier.width((screenWidth * 0.2).dp)) {
                                 TextSubTitle(
                                     "Stop profit:",
                                     txtTitleModsStart.padding(top = 0.dp, bottom = 0.dp)
                                 )
                                 TextSubTitleBold(
-                                    "2 USD",
+                                    "$textSP USD",
                                     txtTitleMods.padding(top = 0.dp, bottom = 0.dp)
                                 )
                             }
@@ -633,7 +645,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                     txtTitleModsStart.padding(top = 0.dp, bottom = 0.dp)
                                 )
                                 TextSubTitleBold(
-                                    "2 USD",
+                                    "$textSL USD",
                                     txtTitleMods.padding(top = 0.dp, bottom = 0.dp)
                                 )
                             }
@@ -679,8 +691,13 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                         unfocusedContainerColor = Color.Transparent,
                                         focusedContainerColor = Color.Transparent
                                     ),
-                                    value = "",
-                                    onValueChange = { },
+                                    value = textSP,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    maxLines = 1,
+                                    onValueChange = {
+                                        textSP = it
+                                        viewModel.textSP.value = textSP
+                                    },
                                     placeholder = {
                                         Text(
                                             "Enter the S.P. amount",
@@ -725,8 +742,13 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                         unfocusedContainerColor = Color.Transparent,
                                         focusedContainerColor = Color.Transparent
                                     ),
-                                    value = "",
-                                    onValueChange = { },
+                                    value = textSL,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    maxLines = 1,
+                                    onValueChange = {
+                                        textSL = it
+                                        viewModel.textSL.value = textSL
+                                    },
                                     placeholder = {
                                         Text(
                                             "Enter the S.L. amount",
