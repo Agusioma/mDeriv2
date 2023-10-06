@@ -19,6 +19,10 @@ import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
@@ -38,9 +42,14 @@ class MainActivity : ComponentActivity() {
     private val okHttpClient = OkHttpClient()
     private var authWebSocket: WebSocket? = null
     private var balanceStreamWebSocket: WebSocket? = null
+    var curTradeSymbol: MutableState<String> = mutableStateOf("1HZ100V")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
+        viewModel.currentTradeSymbol.observe(this, Observer {
+            curTradeSymbol.value = it
+        })
 
         authWSlistener = MainSocket(viewModel)
         balanceStreamWSlistener = BalanceStreamer(viewModel)
@@ -70,7 +79,7 @@ class MainActivity : ComponentActivity() {
             while (true) {
                 delay(1000)
 
-                getPrepopulationTicks("1HZ100V")
+                getPrepopulationTicks(curTradeSymbol.value)
             }
         }
         streamBalance()

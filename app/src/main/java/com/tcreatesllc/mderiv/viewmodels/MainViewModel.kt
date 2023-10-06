@@ -35,6 +35,8 @@ class MainViewModel : ViewModel() {
     private val _socketStatus = MutableLiveData(false)
     val socketStatus: LiveData<Boolean> = _socketStatus
 
+    var currentTradeSymbol: MutableLiveData<String> = MutableLiveData("1HZ100V")
+
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages
     //websockets- END
@@ -102,6 +104,7 @@ class MainViewModel : ViewModel() {
     fun addPrepopulationTicks(message: String) = viewModelScope.launch(Dispatchers.Main) {
         if (_socketStatus.value == true) {
             de_que.value?.clear()
+            comparator_queue.value.clear()
             val parser = JsonParser().parse(message).asJsonObject
             var prepopulation_ticks = parser.get("history").asJsonObject.get("prices").asJsonArray
             var preAyy = prepopulation_ticks

@@ -70,6 +70,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     var accCurr = viewModel.accountCurr.observeAsState("EUR")
     var accList = viewModel.accountList.observeAsState()
 
+
     var listItems: MutableMap<String, String> = mutableMapOf(Pair("Account", "oo"))
     val listItemsMarkets: Map<String, String> = mapOf(
         Pair("AUD/JPY", "frxAUDJPY"),
@@ -108,7 +109,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
         Pair("Gold Basket", "WLDXAU"),
         Pair("AUD Basket", "WLDAUD"),
         Pair("EUR Basket", "WLDEUR"),
-        Pair("GBP Basket", "WLDGB"),
+        Pair("GBP Basket", "WLDGBP"),
         Pair("USD Basket", "WLDUSD"),
         Pair("BTC/USD", "cryBTCUSD"),
         Pair("ETH/USD", "cryETHUSD"),
@@ -450,6 +451,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                             },
                             onClick = {
                                 selectedItemMarkets = selectedOption.key
+                                viewModel.currentTradeSymbol.value = selectedOption.value
                                 isExpandedMarkets = false
                             })
                     }
