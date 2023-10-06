@@ -70,14 +70,56 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     var accCurr = viewModel.accountCurr.observeAsState("EUR")
     var accList = viewModel.accountList.observeAsState()
 
-    var listItems:MutableMap<String, String> = mutableMapOf(Pair("Account", "oo"))
+    var listItems: MutableMap<String, String> = mutableMapOf(Pair("Account", "oo"))
+    val listItemsMarkets: Map<String, String> = mapOf(
+        Pair("AUD/JPY", "frxAUDJPY"),
+        Pair("AUD/USD", "frxAUDUSD"),
+        Pair("EUR/AUD", "frxEURAUD"),
+        Pair("EUR/CHF", "frxEURCHF"),
+        Pair("EUR/GBP", "frxEURGBP"),
+        Pair("EUR/JPY", "frxEURJPY"),
+        Pair("EUR/USD", "frxEURUSD"),
+        Pair("GBP/AUD", "frxGBPAUD"),
+        Pair("GBP/JPY", "frxGBPJPY"),
+        Pair("GBP/USD", "frxGBPUSD"),
+        Pair("USD/CAD", "frxUSDCAD"),
+        Pair("USD/CHF", "frxUSDCHF"),
+        Pair("USD/JPY", "frxUSDJPY"),
+        Pair("Volatility 10 Index", "R_10"),
+        Pair("Volatility 10 (1s) Index", "1HZ10V"),
+        Pair("Volatility 25 Index", "R_25"),
+        Pair("Volatility 25 (1s) Index", "1HZ25V"),
+        Pair("Volatility 50 Index", "R_50"),
+        Pair("Volatility 50 (1s) Index", "1HZ50V"),
+        Pair("Volatility 75 Index", "R_75"),
+        Pair("Volatility 75 (1s) Index", "1HZ75V"),
+        Pair("Volatility 100 Index", "R_100"),
+        Pair("Volatility 100 (1s) Index", "1HZ100V"),
+        Pair("Boom 1000 Index", "BOOM1000"),
+        Pair("Boom 500 Index", "BOOM500"),
+        Pair("Crash 1000 Index", "CRASH1000"),
+        Pair("Crash 500 Index", "CRASH500"),
+        Pair("Jump 10 Index", "JD10"),
+        Pair("Jump 25 Index", "JD25"),
+        Pair("Jump 50 Index", "JD50"),
+        Pair("Jump 75 Index", "JD75"),
+        Pair("Jump 100 Index", "JD100"),
+        Pair("Step Index", "stpRNG"),
+        Pair("Gold Basket", "WLDXAU"),
+        Pair("AUD Basket", "WLDAUD"),
+        Pair("EUR Basket", "WLDEUR"),
+        Pair("GBP Basket", "WLDGB"),
+        Pair("USD Basket", "WLDUSD"),
+        Pair("BTC/USD", "cryBTCUSD"),
+        Pair("ETH/USD", "cryETHUSD"),
+    )
 
     accList.value?.forEach { it ->
         var accno = it.get("loginid")
         var label = ""
-        if(it.get("is_virtual") == "0"){
+        if (it.get("is_virtual") == "0") {
             label = "REAL"
-        }else{
+        } else {
             label = "DEMO"
         }
 
@@ -92,14 +134,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     //var accBalance: Mu
     // = viewModel.accountBalance.value
     //val listItems = arrayOf("VR4257389", "CR3572933", "CR1123412", "CR3518444")
-    val listItemsMarkets = arrayOf(
-        "Vol. 10(1s) Index",
-        "Vol. 10 Index",
-        "Vol. 25(1s) Index",
-        "Vol. 25 Index",
-        "AUD/JPY",
-        "EUR/AUD"
-    )
+
 
     val listItemsMultipliers = arrayOf("×10", "×20", "×30", "×50", "×100")
     val contextForToast = LocalContext.current.applicationContext
@@ -120,7 +155,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
     // remember the selected item
     var selectedItemMarkets by remember {
-        mutableStateOf(listItemsMarkets[0])
+        mutableStateOf("Volatility 100 (1s) Index")
     }
 
     var isExpandedMultipliers by remember {
@@ -406,7 +441,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    text = selectedOption,
+                                    text = selectedOption.key,
                                     fontFamily = mDerivDigitFamily,
                                     fontSize = 15.sp,
                                     textAlign = TextAlign.Start,
@@ -414,7 +449,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                 )
                             },
                             onClick = {
-                                selectedItemMarkets = selectedOption
+                                selectedItemMarkets = selectedOption.key
                                 isExpandedMarkets = false
                             })
                     }
