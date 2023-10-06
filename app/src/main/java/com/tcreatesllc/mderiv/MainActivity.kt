@@ -20,7 +20,6 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -35,24 +34,31 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: MainViewModel
+    private lateinit var mainViewModel: MainViewModel
 
     private lateinit var balanceStreamWSlistener: WebSocketListener
     private lateinit var authWSlistener: WebSocketListener
     private val okHttpClient = OkHttpClient()
     private var authWebSocket: WebSocket? = null
-    private var balanceStreamWebSocket: WebSocket? = null
+    //private var balanceStreamWebSocket: WebSocket? = null
     var curTradeSymbol: MutableState<String> = mutableStateOf("1HZ100V")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        viewModel.currentTradeSymbol.observe(this, Observer {
+        mainViewModel.currentTradeSymbol.observe(this) {
             curTradeSymbol.value = it
+        }
+
+        mainViewModel.tradeIt.observe(this, Observer {
+            if(mainViewModel.tradeIt.value == true){
+                tradeMultiplier()
+            }
+
         })
 
-        authWSlistener = MainSocket(viewModel)
-        balanceStreamWSlistener = BalanceStreamer(viewModel)
+        authWSlistener = MainSocket(mainViewModel)
+        balanceStreamWSlistener = BalanceStreamer(mainViewModel)
 
         //initialize session
         authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
@@ -102,6 +108,51 @@ class MainActivity : ComponentActivity() {
                     "  \"subscribe\": 1\n" +
                     "}"
         )
+    }
+
+    private fun tradeMultiplier() {
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"buy\": 1,\n" +
+                    "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                    "  \"subscribe\": 1,\n" +
+                    "  \"parameters\":{\n" +
+                    "        \"limit_order\":{\n" +
+                    "            \"take_profit\":${mainViewModel.textSP.value}, \n" +
+                    "            \"stop_loss\":${mainViewModel.textSL.value}\n" +
+                    "        },\n" +
+                    "        \"amount\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                    "        \"basis\": \"stake\",\n" +
+                    "        \"contract_type\": \"${mainViewModel.textOption.value}\",\n" +
+                    "        \"currency\": \"${mainViewModel.accountCurr.value}\",\n" +
+                    "        \"multiplier\": ${mainViewModel.textMul.value?.toInt()},\n" +
+                    "        \"symbol\": \"${mainViewModel.currentTradeSymbol.value}\"\n" +
+                    "}\n" +
+                    "}"
+        )
+
+        var textYou = "{\n" +
+                "  \"buy\": 1,\n" +
+                "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                "  \"subscribe\": 1,\n" +
+                "  \"parameters\":{\n" +
+                "        \"limit_order\":{\n" +
+                "            \"take_profit\":${mainViewModel.textSP.value}, \n" +
+                "            \"stop_loss\":${mainViewModel.textSL.value}\n" +
+                "        },\n" +
+                "        \"amount\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                "        \"basis\": \"stake\",\n" +
+                "        \"contract_type\": \"${mainViewModel.textOption.value}\",\n" +
+                "        \"currency\": \"${mainViewModel.accountCurr.value}\",\n" +
+                "        \"multiplier\": ${mainViewModel.textMul.value},\n" +
+                "        \"symbol\": \"${mainViewModel.currentTradeSymbol.value}\"\n" +
+                "}\n" +
+                "}"
+
+        Log.d("MUL_MUL", textYou)
+
+        mainViewModel.tradeIt.value = false
+
     }
 
     private fun getPrepopulationTicks(marketIndex: String){

@@ -180,10 +180,9 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     var (slCheckedState, slOnStateChange) = remember { mutableStateOf(true) }
 
     var textStake by rememberSaveable { mutableStateOf("") }
-    var textSL by rememberSaveable { mutableStateOf("") }
-    var textSP by rememberSaveable { mutableStateOf("") }
-    var textMul by rememberSaveable { mutableStateOf(100.0) }
-
+    var textSL by rememberSaveable { mutableStateOf("0.10") }
+    var textSP by rememberSaveable { mutableStateOf("0.10") }
+    var textMul by rememberSaveable { mutableStateOf(listItemsMultipliers[0].substring(1)) }
 
     //var stoplosscheckstate = remember { mutableStateOf(true) }
     //var
@@ -606,7 +605,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                             },
                                             onClick = {
                                                 selectedItemMultipliers = selectedOption
-                                                textMul = selectedOption.substring(1).toDouble()
+                                                textMul = selectedOption.substring(1)
 
                                                 viewModel.textMul.value = textMul
                                                 //Log.d("SMI", selectedOption.substring(1))
@@ -635,7 +634,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                     txtTitleModsStart.padding(top = 0.dp, bottom = 0.dp)
                                 )
                                 TextSubTitleBold(
-                                    "$textSP USD",
+                                    "$textSP",
                                     txtTitleMods.padding(top = 0.dp, bottom = 0.dp)
                                 )
                             }
@@ -645,7 +644,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                                     txtTitleModsStart.padding(top = 0.dp, bottom = 0.dp)
                                 )
                                 TextSubTitleBold(
-                                    "$textSL USD",
+                                    "$textSL",
                                     txtTitleMods.padding(top = 0.dp, bottom = 0.dp)
                                 )
                             }
@@ -778,6 +777,22 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
 
                         ExtendedFloatingActionButton(
                             onClick = {
+                                viewModel.textOption.value = "MULTDOWN"
+
+                                if (textSP == "") {
+                                    viewModel.textSP.value = "0.0"
+                                } else {
+                                    viewModel.textSP.value = textSP
+                                }
+
+                                if (textSL == "") {
+                                    viewModel.textSL.value = "0.0"
+                                } else {
+                                    viewModel.textSL.value = textSL
+                                }
+
+                                viewModel.tradeIt.value = true
+                                showBottomSheet = false
                             },
                             shape = RectangleShape,
                             icon = {
@@ -798,6 +813,21 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
                         Spacer(Modifier.weight(3f))
                         ExtendedFloatingActionButton(
                             onClick = {
+                                viewModel.textOption.value = "MULTUP"
+                                if (textSP == "") {
+                                    viewModel.textSP.value = "0.10"
+                                } else {
+                                    viewModel.textSP.value = textSP
+                                }
+
+                                if (textSL == "") {
+                                    viewModel.textSL.value = "0.10"
+                                } else {
+                                    viewModel.textSL.value = textSL
+                                }
+
+                                viewModel.tradeIt.value = true
+                                showBottomSheet = false
                             },
                             shape = RectangleShape,
                             icon = {

@@ -41,13 +41,11 @@ class MainViewModel : ViewModel() {
     var currentTradeSymbol: MutableLiveData<String> = MutableLiveData("1HZ100V")
     var currentTradeSymbolKey: MutableLiveData<String> = MutableLiveData("Volatility 100 (1s) Index")
     var textStake: MutableLiveData<String> = MutableLiveData("")
-    var textSL: MutableLiveData<String> = MutableLiveData("")
-    var textSP: MutableLiveData<String> = MutableLiveData("")
-    var textMul: MutableLiveData<Double> = MutableLiveData(100.0)
-   /* var textStake by rememberSaveable { mutableStateOf("") }
-    var textSL by rememberSaveable { mutableStateOf("") }
-    var textSP by rememberSaveable { mutableStateOf("") }
-    var textMul by rememberSaveable { mutableStateOf(100.0) }*/
+    var textSL: MutableLiveData<String> = MutableLiveData("0.10")
+    var textSP: MutableLiveData<String> = MutableLiveData("0.10")
+    var textMul: MutableLiveData<String> = MutableLiveData("10")
+    var textOption: MutableLiveData<String> = MutableLiveData("MULTUP")
+    var tradeIt: MutableLiveData<Boolean> = MutableLiveData(false)
 
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages
@@ -62,8 +60,6 @@ class MainViewModel : ViewModel() {
     var comparator_queue: MutableState<Deque<Float>> = mutableStateOf(ArrayDeque())
 
     val de_que: MutableLiveData<Queue<FloatEntry>> = MutableLiveData(ArrayDeque())
-    
-
 
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
