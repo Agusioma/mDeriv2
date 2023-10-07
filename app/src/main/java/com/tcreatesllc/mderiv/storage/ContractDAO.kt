@@ -22,6 +22,9 @@ interface ContractDAO {
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time")
     fun getAllContracts(id: Int): Flow<List<TransactionDetails>>
 
+    @Query("SELECT COUNT(id) FROM transaction_details WHERE login_id = :id")
+    fun getContractCount(id: Int): Flow<Int>
+
     @Query("UPDATE transaction_details SET current_amount = :amount, profit = :profit, status = :status WHERE contract_id = :id")
     suspend fun update(
         id: Int,
