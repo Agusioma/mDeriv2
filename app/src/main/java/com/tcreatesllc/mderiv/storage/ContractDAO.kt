@@ -31,6 +31,9 @@ interface ContractDAO {
     )
 
     @Query("UPDATE temporary_tokens SET auth_token = :newToken WHERE login_id = :id ")
-    suspend fun updataToken(id: Int, newToken: String)
+    suspend fun updateToken(
+        id: Int,
+        newToken: String
+    )
 
 }
