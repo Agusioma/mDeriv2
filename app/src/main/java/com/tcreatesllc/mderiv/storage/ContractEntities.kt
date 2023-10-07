@@ -14,6 +14,7 @@ data class TemporaryTokens(
 @Entity(tableName = "transaction_details")
 data class TransactionDetails(
     @PrimaryKey(autoGenerate = true) var id: Int=0,
+    @ColumnInfo(name = "login_id") var loginID: String,
     @ColumnInfo(name = "contract_id") var contractID: String,
     @ColumnInfo(name = "display_name") var marketName: String,
     @ColumnInfo(name = "contract_type") var contractType: String,
