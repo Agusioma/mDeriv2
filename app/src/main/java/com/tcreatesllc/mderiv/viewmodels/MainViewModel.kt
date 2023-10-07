@@ -2,13 +2,10 @@ package com.tcreatesllc.mderiv.viewmodels
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,16 +14,20 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.util.RandomEntriesGenerator
+import com.tcreatesllc.mderiv.MainActivity
+import com.tcreatesllc.mderiv.MainApplication
+import com.tcreatesllc.mderiv.storage.TemporaryTokens
+import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import java.util.*
+import java.util.ArrayDeque
+import java.util.Collections
+import java.util.Deque
+import java.util.Queue
 
-class MainViewModel : ViewModel() {
+class MainViewModel(private val contractsRepository: ContractsRepository) : ViewModel() {
+
+
 
     private var GENERATOR_X_RANGE_TOP: MutableState<Int> = mutableIntStateOf(3600)
     var GENERATOR_Y_RANGE_BOTTOM: MutableState<Float> = mutableFloatStateOf(0.0f)
@@ -39,7 +40,8 @@ class MainViewModel : ViewModel() {
     val socketStatus: LiveData<Boolean> = _socketStatus
 
     var currentTradeSymbol: MutableLiveData<String> = MutableLiveData("1HZ100V")
-    var currentTradeSymbolKey: MutableLiveData<String> = MutableLiveData("Volatility 100 (1s) Index")
+    var currentTradeSymbolKey: MutableLiveData<String> =
+        MutableLiveData("Volatility 100 (1s) Index")
     var textStake: MutableLiveData<String> = MutableLiveData("")
     var textSL: MutableLiveData<String> = MutableLiveData("0.10")
     var textSP: MutableLiveData<String> = MutableLiveData("0.10")
@@ -74,7 +76,14 @@ class MainViewModel : ViewModel() {
             var accList = parser.get("authorize").asJsonObject.get("account_list").asJsonArray
             accountCurr.value = accCurr.asString
             accountBalance.value = balance.asFloat
+
+
+
             for (e in accList) {
+                contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
+                    userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
+                    userTradeAuthToken = "HEEEEY"
+                    ))
                 tempList.add(
                     mapOf(
                         Pair("currency", e.asJsonObject.get("currency").toString()),
@@ -125,13 +134,12 @@ class MainViewModel : ViewModel() {
                 )
 
 
-
             }
 
             GENERATOR_Y_RANGE_BOTTOM.value = Collections.min(comparator_queue.value)
             GENERATOR_Y_RANGE_TOP.value = Collections.max(comparator_queue.value)
 
-            var l: MutableState<List<FloatEntry>> = mutableStateOf( ArrayList(de_que.value))
+            var l: MutableState<List<FloatEntry>> = mutableStateOf(ArrayList(de_que.value))
             customStepChartEntryModelProducer.setEntries(l.value)
             _messages.value = message
         }
@@ -143,21 +151,21 @@ class MainViewModel : ViewModel() {
             val parser = JsonParser().parse(message).asJsonObject
             var streamed_tick = parser.get("tick").asJsonObject.get("quote")
 
-                de_que.value?.add(
-                    FloatEntry(x = 299.toFloat(), y = streamed_tick.asFloat)
-                )
+            de_que.value?.add(
+                FloatEntry(x = 299.toFloat(), y = streamed_tick.asFloat)
+            )
 
 
-                comparator_queue.value.add(streamed_tick.asFloat)
+            comparator_queue.value.add(streamed_tick.asFloat)
 
 
 
 
-          GENERATOR_Y_RANGE_BOTTOM.value = Collections.min(comparator_queue.value)
+            GENERATOR_Y_RANGE_BOTTOM.value = Collections.min(comparator_queue.value)
             GENERATOR_Y_RANGE_TOP.value = Collections.max(comparator_queue.value)
 
 
-            var l: MutableState<List<FloatEntry>> = mutableStateOf( ArrayList(de_que.value))
+            var l: MutableState<List<FloatEntry>> = mutableStateOf(ArrayList(de_que.value))
             customStepChartEntryModelProducer.setEntries(l.value)
 
             _messages.value = message
@@ -167,7 +175,6 @@ class MainViewModel : ViewModel() {
     fun setStatus(status: Boolean) = viewModelScope.launch(Dispatchers.Main) {
         _socketStatus.value = status
     }
-
 
 
     private companion object {

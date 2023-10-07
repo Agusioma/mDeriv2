@@ -59,13 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcreatesllc.mderiv.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tcreatesllc.mderiv.ui.AppViewModelProvider
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart1
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TradeScreen(viewModel: MainViewModel = viewModel()) {
+fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val screenWidth = LocalConfiguration.current.screenWidthDp
 

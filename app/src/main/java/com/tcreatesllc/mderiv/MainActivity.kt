@@ -1,6 +1,7 @@
 package com.tcreatesllc.mderiv
 
 import BalanceStreamer
+import android.app.Application
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
@@ -19,11 +20,18 @@ import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.tcreatesllc.mderiv.storage.AppContainer
+import com.tcreatesllc.mderiv.storage.AppDataContainer
+import com.tcreatesllc.mderiv.storage.MDerivDatabase
+import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
+import com.tcreatesllc.mderiv.storage.repositories.RepositoryImpl
+import com.tcreatesllc.mderiv.ui.AppViewModelProvider
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import com.tcreatesllc.mderiv.websockets.MainSocket
 import kotlinx.coroutines.delay
@@ -34,7 +42,9 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 class MainActivity : ComponentActivity() {
-    private lateinit var mainViewModel: MainViewModel
+    //private lateinit var mainViewModel: MainViewModel
+   // lateinit var container: MainApplication
+   private val mainViewModel: MainViewModel by viewModels { AppViewModelProvider.Factory }
 
     private lateinit var balanceStreamWSlistener: WebSocketListener
     private lateinit var authWSlistener: WebSocketListener
@@ -42,9 +52,12 @@ class MainActivity : ComponentActivity() {
     private var authWebSocket: WebSocket? = null
     //private var balanceStreamWebSocket: WebSocket? = null
     var curTradeSymbol: MutableState<String> = mutableStateOf("1HZ100V")
+    lateinit var container: AppContainer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        container = AppDataContainer(this)
+      //  mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+      //  mainViewModel = ViewModelProvider(this).get( )
 
         mainViewModel.currentTradeSymbol.observe(this) {
             curTradeSymbol.value = it

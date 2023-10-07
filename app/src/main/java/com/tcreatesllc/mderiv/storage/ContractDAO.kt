@@ -1,17 +1,19 @@
 package com.tcreatesllc.mderiv.storage
 
+import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface ContractDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTempToken(temporaryTokens: TemporaryTokens)
+    fun insertTempToken(temporaryTokens: TemporaryTokens)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTransactionDetails(transactionDetails: TransactionDetails)
+    fun insertTransactionDetails(transactionDetails: TransactionDetails)
 
     @Query("SELECT * FROM transaction_details ORDER BY entry_tick_time DESC LIMIT 10")
     fun getRecentTenContracts(): Flow<List<TransactionDetails>>
@@ -22,11 +24,11 @@ interface ContractDAO {
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time")
     fun getAllContracts(id: Int): Flow<List<TransactionDetails>>
 
-    @Query("SELECT COUNT(id) FROM transaction_details WHERE login_id = :id")
+    @Query("SELECT COUNT(id) AS CHECKER FROM transaction_details WHERE login_id = :id")
     fun getContractCount(id: Int): Flow<Int>
 
     @Query("UPDATE transaction_details SET current_amount = :amount, profit = :profit, status = :status WHERE contract_id = :id")
-    suspend fun update(
+    fun update(
         id: Int,
         amount: String,
         profit: String,
@@ -34,7 +36,7 @@ interface ContractDAO {
     )
 
     @Query("UPDATE temporary_tokens SET auth_token = :newToken WHERE login_id = :id ")
-    suspend fun updateToken(
+    fun updateToken(
         id: Int,
         newToken: String
     )

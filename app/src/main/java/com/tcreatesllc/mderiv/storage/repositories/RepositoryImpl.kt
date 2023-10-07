@@ -3,15 +3,22 @@ package com.tcreatesllc.mderiv.storage.repositories
 import com.tcreatesllc.mderiv.storage.ContractDAO
 import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.storage.TransactionDetails
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository {
     override suspend fun insertTempToken(temporaryTokens: TemporaryTokens) {
-        contractDAO.insertTempToken(temporaryTokens)
+        withContext(Dispatchers.IO){
+            contractDAO.insertTempToken(temporaryTokens)
+        }
+
     }
 
     override suspend fun insertTransactionDetails(transactionDetails: TransactionDetails) {
-        contractDAO.insertTransactionDetails(transactionDetails)
+        withContext(Dispatchers.IO) {
+            contractDAO.insertTransactionDetails(transactionDetails)
+        }
     }
 
     override fun getRecentTenContracts(): Flow<List<TransactionDetails>> {
@@ -31,11 +38,15 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
     }
 
     override suspend fun update(id: Int, amount: String, profit: String, status: String) {
-        contractDAO.update(id, amount, profit, status)
+        withContext(Dispatchers.IO) {
+            contractDAO.update(id, amount, profit, status)
+        }
     }
 
     override suspend fun updateToken(id: Int, newToken: String) {
-        contractDAO.updateToken(id, newToken)
+        withContext(Dispatchers.IO) {
+            contractDAO.updateToken(id, newToken)
+        }
     }
 
 }
