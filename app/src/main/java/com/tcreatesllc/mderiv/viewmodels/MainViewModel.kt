@@ -52,6 +52,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textOption: MutableLiveData<String> = MutableLiveData("MULTUP")
     var tradeIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var userAuthTokenTemp: MutableLiveData<String> = MutableLiveData("")
+    var userLoginID: MutableLiveData<String> = MutableLiveData("")
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages
     //websockets- END
@@ -110,7 +111,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
 
-    var recentTenPositions = contractsRepository.getRecentTenContracts(userAuthTokenTemp.value)
+    var recentTenPositions = contractsRepository.getRecentTenContracts("CR5937830")
+
 
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
@@ -227,7 +229,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
             contractsRepository.insertTransactionDetails(
                 transactionDetails = TransactionDetails(
-                    loginID = userAuthTokenTemp.value,
+                    loginID = userLoginID.value,
                     contractID = buy_Response.get("contract_id").asString,
                     marketName = listItemsMarkets.entries.find { it.value == buy_echo_req.get("parameters").asJsonObject.get("symbol").asString }?.key,
                     contractType = if(buy_echo_req.get("parameters").asJsonObject.get("contract_type").asString == "MULTUP"){ "UP" }else{"DOWN"},

@@ -36,6 +36,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +75,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     var accCurr = viewModel.accountCurr.observeAsState("EUR")
     var accList = viewModel.accountList.observeAsState()
 
+    //var listAccReady = viewModel.listAccsReady.observeAsState("NO")
 
     var listItems: MutableMap<String, String> = mutableMapOf(Pair("Account", "oo"))
     val listItemsMarkets: Map<String, String> = mapOf(
@@ -175,7 +177,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
     // remember the selected item
     var selectedItem by remember {
-        mutableStateOf("-----")
+        mutableStateOf("CR5937830")
     }
 
     var isExpandedMarkets by remember {
@@ -208,6 +210,10 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     var textSL by rememberSaveable { mutableStateOf("0.10") }
     var textSP by rememberSaveable { mutableStateOf("0.10") }
     var textMul by rememberSaveable { mutableStateOf(listItemsMultipliers[0].substring(1)) }
+
+    val recentTenOpenPositions by viewModel.recentTenPositions.collectAsState(initial = true)
+   // viewModel.getOpenPositions()
+    Log.i("TEEEST", recentTenOpenPositions.toString())
 
     //var stoplosscheckstate = remember { mutableStateOf(true) }
     //var
@@ -314,7 +320,9 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                             },
                             onClick = {
                                 selectedItem = selectedOption.value
-                                Log.d("CLICKED", selectedItem!!)
+                                Log.d("CLICKED", selectedOption.value.substring(1, selectedOption.value.length - 1))
+
+                                viewModel.userLoginID.value = selectedOption.value.substring(1, selectedOption.value.length - 1)
                                 isExpanded = false
                             })
                     }

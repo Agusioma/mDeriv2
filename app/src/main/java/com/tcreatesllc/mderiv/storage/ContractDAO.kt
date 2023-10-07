@@ -15,7 +15,7 @@ interface ContractDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTransactionDetails(transactionDetails: TransactionDetails)
 
-    @Query("SELECT * FROM transaction_details WHERE ID = :id ORDER BY entry_tick_time DESC LIMIT 10")
+    @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time DESC LIMIT 10")
     fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>>
 
     @Query("SELECT * FROM temporary_tokens WHERE login_id = :id")

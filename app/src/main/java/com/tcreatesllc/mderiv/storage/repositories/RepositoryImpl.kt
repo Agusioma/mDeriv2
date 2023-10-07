@@ -5,6 +5,7 @@ import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.storage.TransactionDetails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository {
@@ -22,7 +23,13 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
     }
 
     override fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>> {
-        return contractDAO.getRecentTenContracts(id)
+      /*  database.cardioDao().getLatestAvg().map {
+            it?:0.0
+        }*/
+        return contractDAO.getRecentTenContracts(id).map{
+           it
+        }
+        //return contractDAO.getRecentTenContracts(id)
     }
 
     override fun getAuthToken(id: String?): Flow<TemporaryTokens> {
