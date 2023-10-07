@@ -140,7 +140,31 @@ fun TradeScreen(viewModel: MainViewModel = viewModel()) {
     //val listItems = arrayOf("VR4257389", "CR3572933", "CR1123412", "CR3518444")
 
 
-    val listItemsMultipliers = arrayOf("×10", "×20", "×30", "×50", "×100")
+    val listItemsMultipliers = arrayOf(
+        "×1",
+        "×2",
+        "×3",
+        "×4",
+        "×5",
+        "×10",
+        "×20",
+        "×30",
+        "×40",
+        "×50",
+        "×60",
+        "×75",
+        "×100",
+        "×150",
+        "×200",
+        "×300",
+        "×400",
+        "×500",
+        "×1000",
+        "×1500",
+        "×2500",
+        "×5000"
+
+    )
     val contextForToast = LocalContext.current.applicationContext
 
     // state of the menu
