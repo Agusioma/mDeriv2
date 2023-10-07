@@ -15,30 +15,30 @@ interface ContractDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTransactionDetails(transactionDetails: TransactionDetails)
 
-    @Query("SELECT * FROM transaction_details ORDER BY entry_tick_time DESC LIMIT 10")
-    fun getRecentTenContracts(): Flow<List<TransactionDetails>>
+    @Query("SELECT * FROM transaction_details WHERE ID = :id ORDER BY entry_tick_time DESC LIMIT 10")
+    fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>>
 
     @Query("SELECT * FROM temporary_tokens WHERE login_id = :id")
-    fun getAuthToken(id: Int): Flow<TemporaryTokens>
+    fun getAuthToken(id: String?): Flow<TemporaryTokens>
 
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time")
-    fun getAllContracts(id: Int): Flow<List<TransactionDetails>>
+    fun getAllContracts(id: String?): Flow<List<TransactionDetails>>
 
-    @Query("SELECT COUNT(id) AS CHECKER FROM transaction_details WHERE login_id = :id")
-    fun getContractCount(id: Int): Flow<Int>
+    @Query("SELECT COUNT(contract_id) AS CHECKER FROM transaction_details WHERE login_id = :id")
+    fun getContractCount(id: String?): Flow<Int>
 
     @Query("UPDATE transaction_details SET current_amount = :amount, profit = :profit, status = :status WHERE contract_id = :id")
     fun update(
-        id: Int,
-        amount: String,
-        profit: String,
-        status: String
+        id: String?,
+        amount: String?,
+        profit: String?,
+        status: String?
     )
 
     @Query("UPDATE temporary_tokens SET auth_token = :newToken WHERE login_id = :id ")
     fun updateToken(
-        id: Int,
-        newToken: String
+        id: String?,
+        newToken: String?
     )
 
 }

@@ -17,6 +17,7 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.tcreatesllc.mderiv.MainActivity
 import com.tcreatesllc.mderiv.MainApplication
 import com.tcreatesllc.mderiv.storage.TemporaryTokens
+import com.tcreatesllc.mderiv.storage.TransactionDetails
 import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,6 +36,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     private var UPDATE_FREQUENCY: MutableState<Long> = mutableLongStateOf(1000L)
     var preAyy: MutableState<JsonArray> = mutableStateOf(JsonArray())
 
+
+
     //websockets-START
     private val _socketStatus = MutableLiveData(false)
     val socketStatus: LiveData<Boolean> = _socketStatus
@@ -48,7 +51,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textMul: MutableLiveData<String> = MutableLiveData("10")
     var textOption: MutableLiveData<String> = MutableLiveData("MULTUP")
     var tradeIt: MutableLiveData<Boolean> = MutableLiveData(false)
-
+    var userAuthTokenTemp: MutableLiveData<String> = MutableLiveData("")
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages
     //websockets- END
@@ -62,10 +65,52 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var comparator_queue: MutableState<Deque<Float>> = mutableStateOf(ArrayDeque())
 
     val de_que: MutableLiveData<Queue<FloatEntry>> = MutableLiveData(ArrayDeque())
-
+    val listItemsMarkets: Map<String, String> = mapOf(
+        Pair("AUD/JPY", "frxAUDJPY"),
+        Pair("AUD/USD", "frxAUDUSD"),
+        Pair("EUR/AUD", "frxEURAUD"),
+        Pair("EUR/CHF", "frxEURCHF"),
+        Pair("EUR/GBP", "frxEURGBP"),
+        Pair("EUR/JPY", "frxEURJPY"),
+        Pair("EUR/USD", "frxEURUSD"),
+        Pair("GBP/AUD", "frxGBPAUD"),
+        Pair("GBP/JPY", "frxGBPJPY"),
+        Pair("GBP/USD", "frxGBPUSD"),
+        Pair("USD/CAD", "frxUSDCAD"),
+        Pair("USD/CHF", "frxUSDCHF"),
+        Pair("USD/JPY", "frxUSDJPY"),
+        Pair("Volatility 10 Index", "R_10"),
+        Pair("Volatility 10 (1s) Index", "1HZ10V"),
+        Pair("Volatility 25 Index", "R_25"),
+        Pair("Volatility 25 (1s) Index", "1HZ25V"),
+        Pair("Volatility 50 Index", "R_50"),
+        Pair("Volatility 50 (1s) Index", "1HZ50V"),
+        Pair("Volatility 75 Index", "R_75"),
+        Pair("Volatility 75 (1s) Index", "1HZ75V"),
+        Pair("Volatility 100 Index", "R_100"),
+        Pair("Volatility 100 (1s) Index", "1HZ100V"),
+        Pair("Boom 1000 Index", "BOOM1000"),
+        Pair("Boom 500 Index", "BOOM500"),
+        Pair("Crash 1000 Index", "CRASH1000"),
+        Pair("Crash 500 Index", "CRASH500"),
+        Pair("Jump 10 Index", "JD10"),
+        Pair("Jump 25 Index", "JD25"),
+        Pair("Jump 50 Index", "JD50"),
+        Pair("Jump 75 Index", "JD75"),
+        Pair("Jump 100 Index", "JD100"),
+        Pair("Step Index", "stpRNG"),
+        Pair("Gold Basket", "WLDXAU"),
+        Pair("AUD Basket", "WLDAUD"),
+        Pair("EUR Basket", "WLDEUR"),
+        Pair("GBP Basket", "WLDGBP"),
+        Pair("USD Basket", "WLDUSD"),
+        Pair("BTC/USD", "cryBTCUSD"),
+        Pair("ETH/USD", "cryETHUSD"),
+    )
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
 
+    var recentTenPositions = contractsRepository.getRecentTenContracts(userAuthTokenTemp.value)
 
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
@@ -167,6 +212,48 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
             var l: MutableState<List<FloatEntry>> = mutableStateOf(ArrayList(de_que.value))
             customStepChartEntryModelProducer.setEntries(l.value)
+
+            _messages.value = message
+        }
+    }
+
+    fun addInitialBuyDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
+        if (_socketStatus.value == true) {
+            de_que.value?.clear()
+            comparator_queue.value.clear()
+            val parser = JsonParser().parse(message).asJsonObject
+            var buy_Response = parser.get("buy").asJsonObject
+            var buy_echo_req = parser.get("echo_req").asJsonObject
+
+            contractsRepository.insertTransactionDetails(
+                transactionDetails = TransactionDetails(
+                    loginID = userAuthTokenTemp.value,
+                    contractID = buy_Response.get("contract_id").asString,
+                    marketName = listItemsMarkets.entries.find { it.value == buy_echo_req.get("parameters").asJsonObject.get("symbol").asString }?.key,
+                    contractType = if(buy_echo_req.get("parameters").asJsonObject.get("contract_type").asString == "MULTUP"){ "UP" }else{"DOWN"},
+                    buyPrice = buy_echo_req.get("parameters").asJsonObject.get("amount").asString,
+                    stopLoss = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get("stop_loss").asString,
+                    takeProfit = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get("take_profit").asString,
+                    indicativeAmt = buy_echo_req.get("parameters").asJsonObject.get("amount").asString,
+                    multiplierChosen = buy_echo_req.get("parameters").asJsonObject.get("multiplier").asString,
+                    entrySpot = "0",
+                    profitOrLoss = "0",
+                    tickSpotEntryTime = buy_Response.get("start_time").asString,
+                    contractStatusOpenOrClosed = "open",
+                    symbolName = buy_echo_req.get("parameters").asJsonObject.get("symbol").asString
+                )
+            )
+            /*
+
+
+    @ColumnInfo(name = "underlying") var symbolName: String
+)
+             */
+
+            /*contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
+                userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
+                userTradeAuthToken = "HEEEEY"
+            ))*/
 
             _messages.value = message
         }

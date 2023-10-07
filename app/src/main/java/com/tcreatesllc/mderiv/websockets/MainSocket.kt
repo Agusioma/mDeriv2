@@ -32,9 +32,11 @@ class MainSocket(
                 viewModel.addBalanceStream(text)
             } else if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
                 viewModel.addPrepopulationTicks(text)
-            }else if (JsonParser().parse(text).asJsonObject.get("tick") !== null) {
+            } else if (JsonParser().parse(text).asJsonObject.get("tick") !== null) {
                 viewModel.processTickStream(text)
-
+            } else if (JsonParser().parse(text).asJsonObject.get("buy") !== null) {
+                //viewModel.processTickStream(text)
+                viewModel.addInitialBuyDetails(text)
             }
         }
         //Creating JSONObject from String using parser

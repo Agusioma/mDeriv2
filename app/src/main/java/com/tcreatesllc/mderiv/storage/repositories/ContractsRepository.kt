@@ -7,18 +7,18 @@ import kotlinx.coroutines.flow.Flow
 interface ContractsRepository {
     suspend fun insertTempToken(temporaryTokens: TemporaryTokens)
     suspend fun insertTransactionDetails(transactionDetails: TransactionDetails)
-    fun getRecentTenContracts(): Flow<List<TransactionDetails>>
-    fun getAuthToken(id: Int): Flow<TemporaryTokens>
-    fun getAllContracts(id: Int): Flow<List<TransactionDetails>>
-    fun getContractCount(id: Int): Flow<Int>
+    fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>>
+    fun getAuthToken(id: String?): Flow<TemporaryTokens>
+    fun getAllContracts(id: String?): Flow<List<TransactionDetails>>
+    fun getContractCount(id: String?): Flow<Int>
     suspend fun update(
-        id: Int,
-        amount: String,
-        profit: String,
-        status: String
+        id: String?,
+        amount: String?,
+        profit: String?,
+        status: String?
     )
     suspend fun updateToken(
-        id: Int,
-        newToken: String
+        id: String?,
+        newToken: String?
     )
 }

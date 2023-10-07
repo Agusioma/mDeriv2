@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [TemporaryTokens::class, TransactionDetails::class], version = 1, exportSchema = false)
+@Database(entities = [TemporaryTokens::class, TransactionDetails::class], version = 4, exportSchema = false)
 abstract class MDerivDatabase : RoomDatabase() {
 
     abstract fun contractDAO(): ContractDAO

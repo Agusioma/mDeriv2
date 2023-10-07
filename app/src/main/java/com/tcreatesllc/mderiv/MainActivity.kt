@@ -94,6 +94,7 @@ class MainActivity : ComponentActivity() {
                     "  \"authorize\": \"a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN\"\n" +
                     "}"
         )
+        mainViewModel.userAuthTokenTemp.value = "a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN"
         lifecycleScope.launch {
             while (true) {
                 delay(1000)
@@ -128,7 +129,6 @@ class MainActivity : ComponentActivity() {
             "{\n" +
                     "  \"buy\": 1,\n" +
                     "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
-                    "  \"subscribe\": 1,\n" +
                     "  \"parameters\":{\n" +
                     "        \"limit_order\":{\n" +
                     "            \"take_profit\":${mainViewModel.textSP.value}, \n" +

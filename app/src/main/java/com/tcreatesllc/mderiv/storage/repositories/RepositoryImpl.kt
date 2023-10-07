@@ -21,29 +21,29 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
         }
     }
 
-    override fun getRecentTenContracts(): Flow<List<TransactionDetails>> {
-        return contractDAO.getRecentTenContracts()
+    override fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>> {
+        return contractDAO.getRecentTenContracts(id)
     }
 
-    override fun getAuthToken(id: Int): Flow<TemporaryTokens> {
+    override fun getAuthToken(id: String?): Flow<TemporaryTokens> {
         return contractDAO.getAuthToken(id)
     }
 
-    override fun getAllContracts(id: Int): Flow<List<TransactionDetails>> {
+    override fun getAllContracts(id: String?): Flow<List<TransactionDetails>> {
         return contractDAO.getAllContracts(id)
     }
 
-    override fun getContractCount(id: Int): Flow<Int> {
+    override fun getContractCount(id: String?): Flow<Int> {
        return contractDAO.getContractCount(id)
     }
 
-    override suspend fun update(id: Int, amount: String, profit: String, status: String) {
+    override suspend fun update(id: String?, amount: String?, profit: String?, status: String?) {
         withContext(Dispatchers.IO) {
             contractDAO.update(id, amount, profit, status)
         }
     }
 
-    override suspend fun updateToken(id: Int, newToken: String) {
+    override suspend fun updateToken(id: String?, newToken: String?) {
         withContext(Dispatchers.IO) {
             contractDAO.updateToken(id, newToken)
         }
