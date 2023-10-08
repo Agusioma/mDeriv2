@@ -20,6 +20,9 @@ import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.storage.TransactionDetails
 import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.ArrayDeque
 import java.util.Collections
@@ -29,14 +32,11 @@ import java.util.Queue
 class MainViewModel(private val contractsRepository: ContractsRepository) : ViewModel() {
 
 
-
     private var GENERATOR_X_RANGE_TOP: MutableState<Int> = mutableIntStateOf(3600)
     var GENERATOR_Y_RANGE_BOTTOM: MutableState<Float> = mutableFloatStateOf(0.0f)
     private var GENERATOR_Y_RANGE_TOP: MutableState<Float> = mutableFloatStateOf(0.0f)
     private var UPDATE_FREQUENCY: MutableState<Long> = mutableLongStateOf(1000L)
     var preAyy: MutableState<JsonArray> = mutableStateOf(JsonArray())
-
-
 
     //websockets-START
     private val _socketStatus = MutableLiveData(false)
@@ -111,8 +111,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
 
-    var recentTenPositions = contractsRepository.getRecentTenContracts("CR5937830")
-
+    var listOpenPositions2: MutableLiveData<Map<String, List<String>>> = MutableLiveData(mutableMapOf())
+    val listOpenPositions: MutableLiveData<Queue<Map<String, List<String>>>> = MutableLiveData(ArrayDeque())
 
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
@@ -127,10 +127,12 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
 
             for (e in accList) {
-                contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
-                    userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
-                    userTradeAuthToken = "HEEEEY"
-                    ))
+                contractsRepository.insertTempToken(
+                    temporaryTokens = TemporaryTokens(
+                        userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
+                        userTradeAuthToken = "HEEEEY"
+                    )
+                )
                 tempList.add(
                     mapOf(
                         Pair("currency", e.asJsonObject.get("currency").toString()),
@@ -231,11 +233,23 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                 transactionDetails = TransactionDetails(
                     loginID = userLoginID.value,
                     contractID = buy_Response.get("contract_id").asString,
-                    marketName = listItemsMarkets.entries.find { it.value == buy_echo_req.get("parameters").asJsonObject.get("symbol").asString }?.key,
-                    contractType = if(buy_echo_req.get("parameters").asJsonObject.get("contract_type").asString == "MULTUP"){ "UP" }else{"DOWN"},
+                    marketName = listItemsMarkets.entries.find {
+                        it.value == buy_echo_req.get("parameters").asJsonObject.get(
+                            "symbol"
+                        ).asString
+                    }?.key,
+                    contractType = if (buy_echo_req.get("parameters").asJsonObject.get("contract_type").asString == "MULTUP") {
+                        "UP"
+                    } else {
+                        "DOWN"
+                    },
                     buyPrice = buy_echo_req.get("parameters").asJsonObject.get("amount").asString,
-                    stopLoss = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get("stop_loss").asString,
-                    takeProfit = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get("take_profit").asString,
+                    stopLoss = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get(
+                        "stop_loss"
+                    ).asString,
+                    takeProfit = buy_echo_req.get("parameters").asJsonObject.get("limit_order").asJsonObject.get(
+                        "take_profit"
+                    ).asString,
                     indicativeAmt = buy_echo_req.get("parameters").asJsonObject.get("amount").asString,
                     multiplierChosen = buy_echo_req.get("parameters").asJsonObject.get("multiplier").asString,
                     entrySpot = "0",
@@ -265,6 +279,42 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         _socketStatus.value = status
     }
 
+    init {
+        viewModelScope.launch {
+            while (currentCoroutineContext().isActive) {
+                   // listOpenPositions.value.
+
+                    contractsRepository.getRecentTenContracts("CR5937830").collect {
+                        listOpenPositions.value?.clear()
+
+                        for (e in it.withIndex()) {
+
+                            //e.value
+                            listOpenPositions.value?.add(mapOf(Pair(
+                                e.index.toString(), listOf(
+                                    e.value.contractID,
+                                    e.value.marketName,
+                                    e.value.contractType,
+                                    e.value.buyPrice,
+                                    e.value.stopLoss,
+                                    e.value.takeProfit,
+                                    e.value.indicativeAmt,
+                                    e.value.multiplierChosen,
+                                    e.value.entrySpot,
+                                    e.value.profitOrLoss,
+                                    e.value.tickSpotEntryTime,
+                                    e.value.contractStatusOpenOrClosed,
+                                    e.value.symbolName
+                                ) as List<String>
+                            )))
+                        }
+
+                    }
+
+                //listOpenPositions.values = recentTenPositions
+            }
+        }
+    }
 
     private companion object {
         const val MULTI_ENTRIES_COMBINED = 3

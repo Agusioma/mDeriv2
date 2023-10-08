@@ -60,10 +60,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcreatesllc.mderiv.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tcreatesllc.mderiv.storage.TransactionDetails
 import com.tcreatesllc.mderiv.ui.AppViewModelProvider
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart1
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -211,9 +214,19 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     var textSP by rememberSaveable { mutableStateOf("0.10") }
     var textMul by rememberSaveable { mutableStateOf(listItemsMultipliers[0].substring(1)) }
 
-    val recentTenOpenPositions by viewModel.recentTenPositions.collectAsState(initial = true)
-   // viewModel.getOpenPositions()
-    Log.i("TEEEST", recentTenOpenPositions.toString())
+    var listOpenPositions = viewModel.listOpenPositions.observeAsState()
+    /*val recentTenOpenPositions by viewModel.recentTenPositions.collect{
+        listOf(it)
+    }
+
+   // viewModel.getOpenPositions()*/
+    listOpenPositions.value?.forEach {
+        Log.i("TEEEST", it.toString())
+    }
+
+
+    //var listYou: List<TransactionDetails> = listOf(recentTenOpenPositions) as List<TransactionDetails>
+
 
     //var stoplosscheckstate = remember { mutableStateOf(true) }
     //var
@@ -320,9 +333,18 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                             },
                             onClick = {
                                 selectedItem = selectedOption.value
-                                Log.d("CLICKED", selectedOption.value.substring(1, selectedOption.value.length - 1))
+                                Log.d(
+                                    "CLICKED",
+                                    selectedOption.value.substring(
+                                        1,
+                                        selectedOption.value.length - 1
+                                    )
+                                )
 
-                                viewModel.userLoginID.value = selectedOption.value.substring(1, selectedOption.value.length - 1)
+                                viewModel.userLoginID.value = selectedOption.value.substring(
+                                    1,
+                                    selectedOption.value.length - 1
+                                )
                                 isExpanded = false
                             })
                     }
@@ -339,7 +361,14 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
 
             @Composable
-            fun AccountsCard() {
+            fun statementsCard(
+                market: String,
+                tradeOption: String,
+                buyPrice: String,
+                multiplierChosen: String,
+                stopLoss: String,
+                takeProfit: String
+            ) {
                 ElevatedCard(
                     shape = RectangleShape,
                     elevation = CardDefaults.cardElevation(
@@ -373,7 +402,10 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
                     }
 
-                    Balance("Market", "Vol. 100(1s) index", "Option", "Rise(×100)")
+
+
+
+                    Balance("Market", market, "Option", tradeOption)
                     Divider(
                         thickness = 1.dp,
                         color = Color.LightGray,
@@ -384,10 +416,10 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                             )
                             .width((screenWidth * 0.2).dp)
                     )
-                    Balance("Buy. Price", "2,911", "Indicative amt.", "23.5")
+                    Balance("Buy. Price", buyPrice, "Multiplier", multiplierChosen)
 
 
-                    Balance("Profit/Loss", "+25.98", "Max. payout", "5,000")
+                    Balance("Take Profit", stopLoss, "Stop Loss", takeProfit)
                     Row(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -395,7 +427,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                     ) {
                         AssistChip(
                             onClick = { /* Do something! */ },
-                            label = { Text("Close") }
+                            label = { Text("View details") }
                         )
                     }
                 }
@@ -407,9 +439,32 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                     .background(Color.Transparent)
                     .padding(start = 0.dp, end = 10.dp)
             ) {
-                items(5) { index ->
-                    AccountsCard()
+
+                listOpenPositions.value?.forEach {
+                    //Log.e("kjjj", it.values.toString())
+                    it.values.forEach{
+                        item{
+                            statementsCard(it[1], it[2], it[3], it[7], it[4], it[5])
+                        }
+                        Log.e("kjjj", it[0].toString())
+                        Log.e("kjjj", it[1].toString())
+                        Log.e("kjjj", it[2])
+                        Log.e("kjjj", it[3].toString())
+                        Log.e("kjjj", it[4].toString())
+                        Log.e("kjjj", it[5].toString())
+                        Log.e("kjjj", it[6].toString())
+                        Log.e("kjjj", it[7].toString())
+                        Log.e("kjjj", it[8].toString())
+                        Log.e("kjjj", it[9].toString())
+                        Log.e("kjjj", it[10].toString())
+                        Log.e("kjjj", it[11].toString())
+                        Log.e("kjjj", it[12].toString())
+
+                    }
                 }
+               /* items(5) { index ->
+                    statementsCard("hey", "hey", "hey", "hey", "hey", "hey")
+                }*/
             }
 
 
@@ -706,7 +761,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     onCheckedChange = null // null recommended for accessibility with screenreaders
                                 )
                                 Text(
-                                    text = "Stop Profit",
+                                    text = "Take Profit",
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontFamily = mDerivDigitFamily,
                                     modifier = Modifier
@@ -732,7 +787,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     },
                                     placeholder = {
                                         Text(
-                                            "Enter the S.P. amount",
+                                            "Enter the T.P. amount",
                                             fontFamily = mDerivDigitFamily,
                                             color = Color.Gray
                                         )
