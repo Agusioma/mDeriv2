@@ -444,6 +444,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                     clickedContractList.add(e.index, e.value)
                                 }
                                 mainViewModel.clickedContractList.value = clickedContractList
+                                mainViewModel.clickedContractThresholdMarker.value =
+                                    clickedContractList.get(8).toFloat()
                                 mainViewModel.clickedContractID.value = holderListContract[0]
 
                                 showBottomSheet2 = true
@@ -1015,6 +1017,10 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             fun statementsCard(
                                 holderListContract: MutableLiveData<List<String>>
                             ) {
+                                mainViewModel.clickedContractList.value = holderListContract.value
+                                mainViewModel.clickedContractThresholdMarker.value =
+                                    holderListContract.value?.get(8)?.toFloat()
+                                Log.i("TTT", mainViewModel.clickedContractThresholdMarker.value.toString())
                                 var indicativeAmt : MutableState<String> =remember{ mutableStateOf("0")}
                                 var pOl: MutableState<String> =remember{ mutableStateOf("0")}
                                 var statusOoC: MutableState<String> =remember{ mutableStateOf("0")}

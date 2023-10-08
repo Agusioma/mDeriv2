@@ -5,7 +5,12 @@ import android.util.Log
 import androidx.compose.animation.core.spring
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -36,6 +41,7 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.scroll.AutoScrollCondition
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -96,13 +102,24 @@ fun ComposeChart2(
     chartEntryModelProducer: ChartEntryModelProducer,
     viewModel: MainViewModel/*, mods: Modifier*/
 ) {
-    var hey = viewModel.clickedContractList.value?.get(8)?.toFloat()
+    //var hey = viewModel.clickedContractList.observeAsState().value?.get(8)?.toFloat()
+    var hey = viewModel.clickedContractThresholdMarker.observeAsState().value
+    val coroutineScope = rememberCoroutineScope()
+
+    //clickedContractList.value?.get(8)?
+   // viewModel.clickedContractList.value?.get(8)?.observeAsState().value?.let {
+
     //var hey = 3114f
     Log.i("lll", hey.toString())
     var hey2 = hey
     val marker = rememberMarker()
 
-    val thresholdLine =  rememberThresholdLine(hey2)
+    val thresholdLine =  rememberThresholdLine(viewModel)
+    LaunchedEffect(hey){
+        this.launch {
+            Log.i("lll", hey.toString())
+        }
+    }
     ProvideChartStyle(rememberChartStyle(chartColors)) {
 
         var defaultLines = currentChartStyle.lineChart.lines
@@ -152,10 +169,11 @@ fun ComposeChart2(
 }
 
 @Composable
-private fun rememberThresholdLine(THRESHOLD_LINE_VALUE:Float?): ThresholdLine {
-    var tt = 3114f
-    if (THRESHOLD_LINE_VALUE != null) {
-       tt = THRESHOLD_LINE_VALUE
+private fun rememberThresholdLine(viewModel: MainViewModel): ThresholdLine {
+    var tt: MutableState<Float> = remember{ mutableStateOf(3114f)}
+
+    if (viewModel.clickedContractThresholdMarker.observeAsState().value != null) {
+       tt.value = viewModel.clickedContractThresholdMarker.observeAsState().value!!
     }
     val line = shapeComponent(color = color2)
     val label = textComponent(
@@ -167,7 +185,7 @@ private fun rememberThresholdLine(THRESHOLD_LINE_VALUE:Float?): ThresholdLine {
     )
     return remember(line, label) {
 
-            ThresholdLine(thresholdValue = tt, lineComponent = line, labelComponent = label)
+            ThresholdLine(thresholdValue = tt.value, lineComponent = line, labelComponent = label)
 
     }
 }

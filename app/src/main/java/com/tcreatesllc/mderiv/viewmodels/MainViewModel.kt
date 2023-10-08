@@ -127,6 +127,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
     var clickedContractList: MutableLiveData<List<String>> = MutableLiveData(listOf())
     val clickedContractDetails: MutableLiveData<List<String>> = MutableLiveData(listOf())
+    var clickedContractThresholdMarker: MutableLiveData<Float> = MutableLiveData(0.0f)
     var streamContract: MutableLiveData<String> = MutableLiveData("NO")
     var clickedContractID: MutableLiveData<String> = MutableLiveData("")
 
@@ -307,6 +308,10 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                 status = if(buy_Response.get("status").isJsonNull){ "Closed" } else {buy_Response.get("status").asString},
                 entry_spot = buy_Response.get("entry_spot").asString
             )
+
+            clickedContractThresholdMarker.value = buy_Response.get("entry_spot").asFloat
+            Log.i("TTT",  clickedContractThresholdMarker.value.toString())
+            Log.i("TTT2",  buy_Response.get("entry_spot").toString())
 
             textIndicativeAmt.value = (buy_Response.get("profit").asFloat + buy_Response.get("buy_price").asFloat).toString()
             textProfitOrLoss.value = buy_Response.get("profit").asString
