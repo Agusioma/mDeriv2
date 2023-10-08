@@ -175,7 +175,7 @@ private fun rememberThresholdLine(viewModel: MainViewModel): ThresholdLine {
     if (viewModel.clickedContractThresholdMarker.observeAsState().value != null) {
        tt.value = viewModel.clickedContractThresholdMarker.observeAsState().value!!
     }
-    val line = shapeComponent(color = color2)
+    val line = shapeComponent(color = color2, strokeWidth = 1.dp)
     val label = textComponent(
         color = Color.Black,
         background = shapeComponent(Shapes.pillShape, color2),
