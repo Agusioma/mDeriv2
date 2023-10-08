@@ -9,14 +9,14 @@ import okhttp3.WebSocketListener
 
 
 class MainSocket(
-    private val viewModel: MainViewModel
+    private val mainViewModel: MainViewModel
 ) : WebSocketListener() {
 
     private val TAG = "Test"
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
-        viewModel.setStatus(true)
+        mainViewModel.setStatus(true)
         //webSocket.send("Android Device Connected")
         Log.d(TAG, "onOpen: $response")
     }
@@ -27,16 +27,19 @@ class MainSocket(
         val parser = JsonParser().parse(text).asJsonObject
         if (JsonParser().parse(text).asJsonObject.get("ping") == null) {
             if (JsonParser().parse(text).asJsonObject.get("authorize") !== null) {
-                viewModel.addAuthDetails(text)
+                mainViewModel.addAuthDetails(text)
             } else if (JsonParser().parse(text).asJsonObject.get("balance") !== null) {
-                viewModel.addBalanceStream(text)
+                mainViewModel.addBalanceStream(text)
             } else if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
-                viewModel.addPrepopulationTicks(text)
+                mainViewModel.addPrepopulationTicks(text)
             } else if (JsonParser().parse(text).asJsonObject.get("tick") !== null) {
-                viewModel.processTickStream(text)
+                mainViewModel.processTickStream(text)
             } else if (JsonParser().parse(text).asJsonObject.get("buy") !== null) {
                 //viewModel.processTickStream(text)
-                viewModel.addInitialBuyDetails(text)
+                mainViewModel.addInitialBuyDetails(text)
+            } else if (JsonParser().parse(text).asJsonObject.get("proposal_open_contract") !== null) {
+                //viewModel.processTickStream(text)
+                mainViewModel.updateContractDetails(text)
             }
         }
         //Creating JSONObject from String using parser
@@ -52,7 +55,7 @@ class MainSocket(
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         super.onClosed(webSocket, code, reason)
-        viewModel.setStatus(false)
+        mainViewModel.setStatus(false)
         Log.d(TAG, "onClosed: $code $reason")
     }
 

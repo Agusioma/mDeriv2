@@ -135,13 +135,13 @@ class MainActivity : ComponentActivity() {
 
     private fun streamContractDetails() {
         //okHttpClient.
-        /*authWebSocket?.send(
+        authWebSocket?.send(
             "{\n" +
                     "  \"proposal_open_contract\": 1,\n" +
-                    "  \"contract_id\": ${mainViewModel.clickedContractID},\n" +
+                    "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
                     "  \"subscribe\": 1\n" +
                     "}"
-        )*/
+        )
         var textYou = "{\n" +
                 "  \"proposal_open_contract\": 1,\n" +
                 "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +

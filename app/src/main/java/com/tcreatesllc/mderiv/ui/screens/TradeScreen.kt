@@ -39,6 +39,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -1014,7 +1015,18 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             fun statementsCard(
                                 holderListContract: MutableLiveData<List<String>>
                             ) {
-
+                                var indicativeAmt : MutableState<String> =remember{ mutableStateOf("0")}
+                                var pOl: MutableState<String> =remember{ mutableStateOf("0")}
+                                var statusOoC: MutableState<String> =remember{ mutableStateOf("0")}
+                                if (mainViewModel.boolFire.value == false){
+                                    indicativeAmt.value = holderListContract.value?.get(6) ?: ""
+                                   pOl.value = holderListContract.value?.get(9) ?: ""
+                                     statusOoC.value = holderListContract.value?.get(11) ?: ""
+                                }else{
+                                    indicativeAmt.value = mainViewModel.textIndicativeAmt.value.toString()
+                                    pOl.value = mainViewModel.textProfitOrLoss.value.toString()
+                                    statusOoC.value = mainViewModel.textStatus.value.toString()
+                                }
 
                                 //, , , ,, holderListContract[5]
                                 ElevatedCard(
@@ -1061,8 +1073,6 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                     }
 
 
-
-
                                     Balance(
                                         "Market",
                                         holderListContract.value?.get(1) ?: "",
@@ -1079,22 +1089,25 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                             )
                                             .width((screenWidth * 0.2).dp)
                                     )
-                                    Balance(
-                                        "Buy. Price",
-                                        holderListContract.value?.get(3) ?: "",
-                                        "Multiplier",
-                                        holderListContract.value?.get(7) ?: ""
-                                    )
+                                    mainViewModel.textIndicativeAmt.observeAsState().value?.let {
+                                        Balance(
+                                            "Buy. Price",
+                                            holderListContract.value?.get(3) ?: "",
+                                            "Indicative Amt.",
+                                            it
+                                        )
+                                    }
 
-                                    Balance(
-                                        "Profit/Loss",
-                                        holderListContract.value?.get(9)?.replaceFirstChar {
-                                            if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
+                                    mainViewModel.textProfitOrLoss.observeAsState().value?.let {
+                                        mainViewModel.textStatus.observeAsState().value?.let { it1 ->
+                                            Balance(
+                                                "Profit/Loss",
+                                                it,
+                                                "Status",
+                                                it1
+                                            )
                                         }
-                                            ?: "",
-                                        "Status",
-                                        holderListContract.value?.get(11) ?: ""
-                                    )
+                                    }
 
                                     Balance(
                                         "Take Profit",

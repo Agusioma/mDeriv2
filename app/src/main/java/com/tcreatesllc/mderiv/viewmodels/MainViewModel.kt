@@ -24,6 +24,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import java.util.ArrayDeque
 import java.util.Collections
 import java.util.Deque
@@ -57,6 +58,12 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     private val _messages = MutableLiveData<String>()
     val messages: LiveData<String> = _messages
     //websockets- END
+
+
+    var textIndicativeAmt: MutableLiveData<String> = MutableLiveData("0")
+    var textProfitOrLoss: MutableLiveData<String> = MutableLiveData("0")
+    var textStatus: MutableLiveData<String> = MutableLiveData("0")
+    var boolFire: MutableLiveData<Boolean> = MutableLiveData(false)
 
     var tempList: MutableSet<Map<String, String>> = mutableSetOf()
 
@@ -284,6 +291,89 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         }
     }
 
+    fun updateContractDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
+        if (_socketStatus.value == true) {
+            de_que.value?.clear()
+            comparator_queue.value.clear()
+            val parser = JsonParser().parse(message).asJsonObject
+            var buy_Response = parser.get("proposal_open_contract").asJsonObject
+            var buy_echo_req = parser.get("echo_req").asJsonObject
+
+            contractsRepository.update(
+
+                id = buy_echo_req.get("contract_id").asString,
+                amount = (buy_Response.get("profit").asFloat + buy_Response.get("buy_price").asFloat).toString(),
+                profit = buy_Response.get("profit").asString,
+                status = if(buy_Response.get("status").isJsonNull){ "Closed" } else {buy_Response.get("status").asString},
+                entry_spot = buy_Response.get("entry_spot").asString
+            )
+
+            textIndicativeAmt.value = (buy_Response.get("profit").asFloat + buy_Response.get("buy_price").asFloat).toString()
+            textProfitOrLoss.value = buy_Response.get("profit").asString
+            textStatus.value = if(buy_Response.get("status").isJsonNull){ "Closed" } else {buy_Response.get("status").asString}
+            contractsRepository.getRecentTenContracts("CR5937830").collect {
+                listOpenPositions.value?.clear()
+
+                for (e in it.withIndex()) {
+
+                    //e.value
+                    listOpenPositions.value?.add(
+                        mapOf(
+                            Pair(
+                                e.value.contractID, listOf(
+                                    e.value.contractID,
+                                    e.value.marketName,
+                                    e.value.contractType,
+                                    e.value.buyPrice,
+                                    e.value.stopLoss,
+                                    e.value.takeProfit,
+                                    e.value.indicativeAmt,
+                                    e.value.multiplierChosen,
+                                    e.value.entrySpot,
+                                    e.value.profitOrLoss,
+                                    e.value.tickSpotEntryTime,
+                                    e.value.contractStatusOpenOrClosed,
+                                    e.value.symbolName
+                                ) as List<String>
+                            )
+                        )
+                    )
+                }
+
+            }
+
+            listOpenPositions.value?.forEach {
+                try {
+
+                    it.getValue(clickedContractID.value).let{
+                        clickedContractDetails.value = it
+                    }
+                    //Log.i("TEEEST", it.getValue("220437164568").toString())
+
+                } catch (e: Exception) {
+
+                }
+
+                // it.getValue()
+
+            }
+
+            /*
+
+
+    @ColumnInfo(name = "underlying") var symbolName: String
+)
+             */
+
+            /*contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
+                userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
+                userTradeAuthToken = "HEEEEY"
+            ))*/
+
+            _messages.value = message
+        }
+    }
+
     fun setStatus(status: Boolean) = viewModelScope.launch(Dispatchers.Main) {
         _socketStatus.value = status
     }
@@ -325,32 +415,32 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
                 }
 
-            /*if(streamContract.value == "YES") {
-                contractsRepository.getContractDetails(clickedContractID.value).collect {
-                    clickedContractDetails.value?.clear()
-                    for (e in it.withIndex()) {
-                        clickedContractDetails.value?.add(
-                            listOf(
-                                e.value.contractID,
-                                e.value.marketName,
-                                e.value.contractType,
-                                e.value.buyPrice,
-                                e.value.stopLoss,
-                                e.value.takeProfit,
-                                e.value.indicativeAmt,
-                                e.value.multiplierChosen,
-                                e.value.entrySpot,
-                                e.value.profitOrLoss,
-                                e.value.tickSpotEntryTime,
-                                e.value.contractStatusOpenOrClosed,
-                                e.value.symbolName
-                            ) as List<String>
-                        )
+                /*if(streamContract.value == "YES") {
+                    contractsRepository.getContractDetails(clickedContractID.value).collect {
+                        clickedContractDetails.value?.clear()
+                        for (e in it.withIndex()) {
+                            clickedContractDetails.value?.add(
+                                listOf(
+                                    e.value.contractID,
+                                    e.value.marketName,
+                                    e.value.contractType,
+                                    e.value.buyPrice,
+                                    e.value.stopLoss,
+                                    e.value.takeProfit,
+                                    e.value.indicativeAmt,
+                                    e.value.multiplierChosen,
+                                    e.value.entrySpot,
+                                    e.value.profitOrLoss,
+                                    e.value.tickSpotEntryTime,
+                                    e.value.contractStatusOpenOrClosed,
+                                    e.value.symbolName
+                                ) as List<String>
+                            )
+                        }
+
+
                     }
-
-
-                }
-            }*/
+                }*/
 
                 //listOpenPositions.values = recentTenPositions
             }
