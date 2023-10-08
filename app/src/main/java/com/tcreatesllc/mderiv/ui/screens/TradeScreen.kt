@@ -443,11 +443,12 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 for (e in holderListContract.withIndex()) {
                                     clickedContractList.add(e.index, e.value)
                                 }
-                                mainViewModel.clickedContractList.value = clickedContractList
-                                mainViewModel.clickedContractThresholdMarker.value =
-                                    clickedContractList.get(8).toFloat()
-                                mainViewModel.clickedContractID.value = holderListContract[0]
-
+                                for( i in 1..3) {
+                                    mainViewModel.clickedContractList.value = clickedContractList
+                                    mainViewModel.clickedContractThresholdMarker.value =
+                                        clickedContractList.get(8).toFloat()
+                                    mainViewModel.clickedContractID.value = holderListContract[0]
+                                }
                                 showBottomSheet2 = true
 
                                 mainViewModel.streamContract.value == "YES"
