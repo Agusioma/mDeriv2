@@ -114,6 +114,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var listOpenPositions2: MutableLiveData<Map<String, List<String>>> = MutableLiveData(mutableMapOf())
     val listOpenPositions: MutableLiveData<Queue<Map<String, List<String>>>> = MutableLiveData(ArrayDeque())
 
+    var clickedContractList: MutableLiveData<List<String>> = MutableLiveData(listOf())
+
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
         if (_socketStatus.value == true) {

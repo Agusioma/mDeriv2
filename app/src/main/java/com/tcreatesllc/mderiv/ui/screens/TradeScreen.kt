@@ -11,12 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
@@ -30,7 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -67,6 +73,8 @@ import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.Role.Companion.Button
+import com.tcreatesllc.mderiv.ui.charts.ComposeChart2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -204,6 +212,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showBottomSheet2 by remember { mutableStateOf(false) }
 
 
     var (spCheckedState, spOnStateChange) = remember { mutableStateOf(false) }
@@ -223,6 +232,8 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     listOpenPositions.value?.forEach {
         Log.i("TEEEST", it.toString())
     }
+
+    val openDialog = remember { mutableStateOf(false) }
 
 
     //var listYou: List<TransactionDetails> = listOf(recentTenOpenPositions) as List<TransactionDetails>
@@ -362,13 +373,9 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
             @Composable
             fun statementsCard(
-                market: String,
-                tradeOption: String,
-                buyPrice: String,
-                multiplierChosen: String,
-                stopLoss: String,
-                takeProfit: String
+                holderListContract: List<String>
             ) {
+                //, , , ,, holderListContract[5]
                 ElevatedCard(
                     shape = RectangleShape,
                     elevation = CardDefaults.cardElevation(
@@ -405,7 +412,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
 
 
-                    Balance("Market", market, "Option", tradeOption)
+                    Balance("Market", holderListContract[1], "Option", holderListContract[2])
                     Divider(
                         thickness = 1.dp,
                         color = Color.LightGray,
@@ -416,17 +423,35 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                             )
                             .width((screenWidth * 0.2).dp)
                     )
-                    Balance("Buy. Price", buyPrice, "Multiplier", multiplierChosen)
+                    Balance(
+                        "Buy. Price",
+                        holderListContract[3],
+                        "Multiplier",
+                        holderListContract[7]
+                    )
 
 
-                    Balance("Take Profit", stopLoss, "Stop Loss", takeProfit)
+                    Balance(
+                        "Take Profit",
+                        holderListContract[4],
+                        "Stop Loss",
+                        holderListContract[5]
+                    )
                     Row(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(start = 20.dp, end = 20.dp, top = 0.dp, bottom = 0.dp)
                     ) {
                         AssistChip(
-                            onClick = { /* Do something! */ },
+                            onClick = {
+                                var clickedContractList: MutableList<String> = mutableListOf()
+                                for (e in holderListContract.withIndex()) {
+                                    clickedContractList.add(e.index, e.value)
+                                }
+                                viewModel.clickedContractList.value = clickedContractList
+
+                                showBottomSheet2 = true
+                            },
                             label = { Text("View details") }
                         )
                     }
@@ -441,38 +466,18 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
             ) {
 
                 listOpenPositions.value?.forEach {
-                    //Log.e("kjjj", it.values.toString())
-                    it.values.forEach{
-                        item{
-                            statementsCard(it[1], it[2], it[3], it[7], it[4], it[5])
-                        }
-                        Log.e("kjjj", it[0].toString())
-                        Log.e("kjjj", it[1].toString())
-                        Log.e("kjjj", it[2])
-                        Log.e("kjjj", it[3].toString())
-                        Log.e("kjjj", it[4].toString())
-                        Log.e("kjjj", it[5].toString())
-                        Log.e("kjjj", it[6].toString())
-                        Log.e("kjjj", it[7].toString())
-                        Log.e("kjjj", it[8].toString())
-                        Log.e("kjjj", it[9].toString())
-                        Log.e("kjjj", it[10].toString())
-                        Log.e("kjjj", it[11].toString())
-                        Log.e("kjjj", it[12].toString())
+                    it.values.forEach {
+                        item {
 
+                            statementsCard(holderListContract = it)
+                        }
                     }
                 }
-               /* items(5) { index ->
-                    statementsCard("hey", "hey", "hey", "hey", "hey", "hey")
-                }*/
             }
-
-
 
             ComposeChart1(
                 chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
                 viewModel
-                //mods = Modifier.align(Alignment.CenterHorizontally)
             )
 
         }
@@ -940,6 +945,251 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                 //....
             }
         }
+        if (showBottomSheet2) {
+
+            ModalBottomSheet(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 0.dp),
+                onDismissRequest = {
+                    showBottomSheet2 = false
+                },
+                sheetState = sheetState
+            ) {
+                // Sheet content
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    shape = MaterialTheme.shapes.large,
+                    tonalElevation = AlertDialogDefaults.TonalElevation
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = (screenWidth * 0.03).dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val txtTitleMods = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = (screenHeight * 0.00).dp, end = 20.dp)
+
+                        val txtSubTitleMods = Modifier
+                            .align(Alignment.Start)
+                            .padding(top = (screenHeight * 0.12).dp)
+
+                        val txtTitleModsStart = Modifier
+                            .align(Alignment.Start)
+                            .padding(horizontal = 5.dp)
+
+                        val txtTitleModsCenter = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 5.dp)
+
+                        val txtSubTitleModStart = Modifier
+                            .align(Alignment.Start)
+                            .padding(horizontal = 5.dp)
+                        Row(
+                            modifier = Modifier
+                                .padding(bottom = 5.dp, top = 5.dp)
+                        ) {
+
+                            TextSubTitleBold("Open Positions", txtTitleModsCenter)
+                            /*          val txtTitleModsViewAll = Modifier
+                                          .padding(horizontal = (screenWidth * 0.05).dp)
+                          */
+                        }
+                        Row(
+                            modifier = Modifier
+                                .width((screenWidth * 0.85).dp)
+                                .padding(
+                                    top = (screenHeight * 0.0).dp,
+                                    bottom = (screenHeight * 0.0).dp
+                                )
+
+                            //.height((screenHeight * 0.2).dp)
+                        ) {
+
+
+                            @Composable
+                            fun statementsCard(
+                                holderListContract: List<String>
+                            ) {
+
+
+                                //, , , ,, holderListContract[5]
+                                ElevatedCard(
+                                    shape = RectangleShape,
+                                    elevation = CardDefaults.cardElevation(
+                                        defaultElevation = 6.dp
+                                    ),
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 0.dp,
+                                            end = 0.dp,
+                                            bottom = 5.dp,
+                                            top = 5.dp
+                                        )
+                                        .wrapContentWidth()
+                                ) {
+                                    @Composable
+                                    fun Balance(
+                                        caption1: String, amt1: String,
+                                        caption2: String, amt2: String
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .align(Alignment.Start)
+                                                .padding(
+                                                    start = 0.dp,
+                                                    end = 0.dp,
+                                                    top = 2.dp,
+                                                    bottom = 2.dp
+                                                )
+                                        ) {
+
+                                            Column() {
+                                                TextSubTitle(caption1, txtSubTitleModStart)
+                                                TextSubTitleBold(amt1, txtTitleModsStart)
+                                            }
+                                            Column() {
+                                                TextSubTitle(caption2, txtSubTitleModStart)
+                                                TextSubTitleBold(amt2, txtTitleModsStart)
+                                            }
+                                        }
+
+
+                                    }
+
+
+
+
+                                    Balance(
+                                        "Market",
+                                        holderListContract[1],
+                                        "Option",
+                                        holderListContract[2]
+                                    )
+                                    Divider(
+                                        thickness = 1.dp,
+                                        color = Color.LightGray,
+                                        modifier = Modifier
+                                            .padding(
+                                                start = (screenWidth * 0.025).dp,
+                                                end = (screenWidth * 0.025).dp
+                                            )
+                                            .width((screenWidth * 0.2).dp)
+                                    )
+                                    Balance(
+                                        "Buy. Price",
+                                        holderListContract[3],
+                                        "Multiplier",
+                                        holderListContract[7]
+                                    )
+
+
+                                    Balance(
+                                        "Take Profit",
+                                        holderListContract[4],
+                                        "Stop Loss",
+                                        holderListContract[5]
+                                    )
+                                    Row(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .padding(
+                                                start = 20.dp,
+                                                end = 20.dp,
+                                                top = 0.dp,
+                                                bottom = 0.dp
+                                            )
+                                    ) {
+                                        AssistChip(
+                                            onClick = {
+                                                /* for(e in holderListContract.withIndex()){
+                                                     clickedContractList.add(e.index, e.value)
+                                                 }*/
+                                                showBottomSheet2 = true
+                                            },
+                                            label = { Text("View details") }
+                                        )
+                                    }
+                                }
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .height((screenHeight * 0.60).dp)
+                                    .background(Color.Transparent)
+                                    .padding(start = 0.dp, end = 10.dp)
+                            ) {
+
+                                viewModel.clickedContractList.value?.let {
+                                    statementsCard(
+                                        it
+                                    )
+                                }
+
+                            }
+
+                            ComposeChart2(
+                                chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
+                                viewModel
+                            )
+
+                        }
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.Start)
+
+                                .padding(
+                                    bottom = 5.dp,
+                                    top = 0.dp,
+                                    start = (screenWidth * 0.05).dp,
+                                    end = (screenWidth * 0.05).dp
+                                )
+                        ) {
+                            Button(
+                                onClick = {
+                                    showBottomSheet2 = false
+                                },
+                                shape = RectangleShape,
+                            ) {
+                                Text(text = "Back", fontFamily = mDerivTextFamily, fontSize = 20.sp)
+                            }
+                            Spacer(Modifier.weight(3f))
+                            Button(
+                                onClick = {
+                                },
+                                shape = RectangleShape,
+                            ) {
+                                Text(
+                                    text = "Close Trade",
+                                    fontFamily = mDerivTextFamily,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+
+                    }
+                }
+
+                //....
+            }
+        }
+
+        /* if (openDialog.value) {
+             AlertDialog(
+                 onDismissRequest = {
+
+                     // Dismiss the dialog when the user clicks outside the dialog or on the back
+                     // button. If you want to disable that functionality, simply use an empty
+                     // onDismissRequest.
+                     openDialog.value = false
+                 }
+             ) {
+
+             }
+         }*/
 
     }
 
