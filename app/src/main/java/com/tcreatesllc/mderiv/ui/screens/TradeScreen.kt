@@ -75,6 +75,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.Role.Companion.Button
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart2
+import java.lang.Exception
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -229,9 +230,8 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     }
 
    // viewModel.getOpenPositions()*/
-    listOpenPositions.value?.forEach {
-        Log.i("TEEEST", it.toString())
-    }
+
+
 
     val openDialog = remember { mutableStateOf(false) }
 
@@ -449,8 +449,11 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     clickedContractList.add(e.index, e.value)
                                 }
                                 viewModel.clickedContractList.value = clickedContractList
+                                viewModel.clickedContractID.value = holderListContract[0]
 
                                 showBottomSheet2 = true
+
+                                viewModel.streamContract.value == "YES"
                             },
                             label = { Text("View details") }
                         )
@@ -946,7 +949,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
             }
         }
         if (showBottomSheet2) {
-
+            Log.i("kkk", viewModel.clickedContractID.value.toString())
             ModalBottomSheet(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1122,12 +1125,26 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     .background(Color.Transparent)
                                     .padding(start = 0.dp, end = 10.dp)
                             ) {
+                                var tempList: MutList<String> = listOf()
+                                listOpenPositions.value?.forEach {
+                                   try {
 
-                                viewModel.clickedContractList.value?.let {
-                                    statementsCard(
-                                        it
-                                    )
+                                            it.getValue(viewModel.clickedContractID.value).let{
+                                                    tempList = it
+                                            }
+                                            //Log.i("TEEEST", it.getValue("220437164568").toString())
+
+                                   } catch (e: Exception) {
+
+                                   }
+
+                                    // it.getValue()
+
                                 }
+
+                                    statementsCard(
+                                        tempList
+                                    )
 
                             }
 

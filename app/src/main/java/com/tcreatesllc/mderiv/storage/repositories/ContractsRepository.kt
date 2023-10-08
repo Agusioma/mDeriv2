@@ -10,6 +10,8 @@ interface ContractsRepository {
     fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>>
     fun getAuthToken(id: String?): Flow<TemporaryTokens>
     fun getAllContracts(id: String?): Flow<List<TransactionDetails>>
+
+    fun getContractDetails(id: String?): Flow<List<TransactionDetails>>
     fun getContractCount(id: String?): Flow<Int>
     suspend fun update(
         id: String?,

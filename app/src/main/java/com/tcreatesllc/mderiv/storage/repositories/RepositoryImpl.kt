@@ -40,6 +40,10 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
         return contractDAO.getAllContracts(id)
     }
 
+    override fun getContractDetails(id: String?): Flow<List<TransactionDetails>> {
+        return contractDAO.getContractDetails(id)
+    }
+
     override fun getContractCount(id: String?): Flow<Int> {
        return contractDAO.getContractCount(id)
     }

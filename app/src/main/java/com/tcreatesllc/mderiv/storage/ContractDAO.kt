@@ -24,6 +24,9 @@ interface ContractDAO {
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time")
     fun getAllContracts(id: String?): Flow<List<TransactionDetails>>
 
+    @Query("SELECT * FROM transaction_details WHERE contract_id = :id")
+    fun getContractDetails(id: String?): Flow<List<TransactionDetails>>
+
     @Query("SELECT COUNT(contract_id) AS CHECKER FROM transaction_details WHERE login_id = :id")
     fun getContractCount(id: String?): Flow<Int>
 

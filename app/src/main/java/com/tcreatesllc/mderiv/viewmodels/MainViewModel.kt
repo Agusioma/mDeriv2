@@ -108,13 +108,19 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         Pair("BTC/USD", "cryBTCUSD"),
         Pair("ETH/USD", "cryETHUSD"),
     )
+
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
 
-    var listOpenPositions2: MutableLiveData<Map<String, List<String>>> = MutableLiveData(mutableMapOf())
-    val listOpenPositions: MutableLiveData<Queue<Map<String, List<String>>>> = MutableLiveData(ArrayDeque())
+    var listOpenPositions2: MutableLiveData<Map<String, List<String>>> =
+        MutableLiveData(mutableMapOf())
+    val listOpenPositions: MutableLiveData<Queue<Map<String?, List<String>>>> =
+        MutableLiveData(ArrayDeque())
 
     var clickedContractList: MutableLiveData<List<String>> = MutableLiveData(listOf())
+    val clickedContractDetails: MutableLiveData<Queue<List<String>>> = MutableLiveData(ArrayDeque())
+    var streamContract: MutableLiveData<String> = MutableLiveData("NO")
+    var clickedContractID: MutableLiveData<String> = MutableLiveData("")
 
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
@@ -283,35 +289,67 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
     init {
         viewModelScope.launch {
+
             while (currentCoroutineContext().isActive) {
-                   // listOpenPositions.value.
 
-                    contractsRepository.getRecentTenContracts("CR5937830").collect {
-                        listOpenPositions.value?.clear()
+                // listOpenPositions.value.
+                contractsRepository.getRecentTenContracts("CR5937830").collect {
+                    listOpenPositions.value?.clear()
 
-                        for (e in it.withIndex()) {
+                    for (e in it.withIndex()) {
 
-                            //e.value
-                            listOpenPositions.value?.add(mapOf(Pair(
-                                e.index.toString(), listOf(
-                                    e.value.contractID,
-                                    e.value.marketName,
-                                    e.value.contractType,
-                                    e.value.buyPrice,
-                                    e.value.stopLoss,
-                                    e.value.takeProfit,
-                                    e.value.indicativeAmt,
-                                    e.value.multiplierChosen,
-                                    e.value.entrySpot,
-                                    e.value.profitOrLoss,
-                                    e.value.tickSpotEntryTime,
-                                    e.value.contractStatusOpenOrClosed,
-                                    e.value.symbolName
-                                ) as List<String>
-                            )))
-                        }
-
+                        //e.value
+                        listOpenPositions.value?.add(
+                            mapOf(
+                                Pair(
+                                    e.value.contractID, listOf(
+                                        e.value.contractID,
+                                        e.value.marketName,
+                                        e.value.contractType,
+                                        e.value.buyPrice,
+                                        e.value.stopLoss,
+                                        e.value.takeProfit,
+                                        e.value.indicativeAmt,
+                                        e.value.multiplierChosen,
+                                        e.value.entrySpot,
+                                        e.value.profitOrLoss,
+                                        e.value.tickSpotEntryTime,
+                                        e.value.contractStatusOpenOrClosed,
+                                        e.value.symbolName
+                                    ) as List<String>
+                                )
+                            )
+                        )
                     }
+
+                }
+
+            /*if(streamContract.value == "YES") {
+                contractsRepository.getContractDetails(clickedContractID.value).collect {
+                    clickedContractDetails.value?.clear()
+                    for (e in it.withIndex()) {
+                        clickedContractDetails.value?.add(
+                            listOf(
+                                e.value.contractID,
+                                e.value.marketName,
+                                e.value.contractType,
+                                e.value.buyPrice,
+                                e.value.stopLoss,
+                                e.value.takeProfit,
+                                e.value.indicativeAmt,
+                                e.value.multiplierChosen,
+                                e.value.entrySpot,
+                                e.value.profitOrLoss,
+                                e.value.tickSpotEntryTime,
+                                e.value.contractStatusOpenOrClosed,
+                                e.value.symbolName
+                            ) as List<String>
+                        )
+                    }
+
+
+                }
+            }*/
 
                 //listOpenPositions.values = recentTenPositions
             }

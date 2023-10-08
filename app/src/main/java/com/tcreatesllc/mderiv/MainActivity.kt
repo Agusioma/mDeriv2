@@ -100,6 +100,8 @@ class MainActivity : ComponentActivity() {
                 delay(1000)
 
                 getPrepopulationTicks(curTradeSymbol.value)
+
+
             }
         }
         streamBalance()
