@@ -63,12 +63,19 @@ class MainActivity : ComponentActivity() {
             curTradeSymbol.value = it
         }
 
-        mainViewModel.tradeIt.observe(this, Observer {
-            if(mainViewModel.tradeIt.value == true){
+        mainViewModel.tradeIt.observe(this) {
+            if (mainViewModel.tradeIt.value == true) {
                 tradeMultiplier()
             }
 
-        })
+        }
+
+        mainViewModel.subcribeIt.observe(this) {
+            if (mainViewModel.subcribeIt.value == true) {
+                streamContractDetails()
+            }
+
+        }
 
         authWSlistener = MainSocket(mainViewModel)
         balanceStreamWSlistener = BalanceStreamer(mainViewModel)
@@ -125,6 +132,25 @@ class MainActivity : ComponentActivity() {
                     "}"
         )
     }
+
+    private fun streamContractDetails() {
+        //okHttpClient.
+        /*authWebSocket?.send(
+            "{\n" +
+                    "  \"proposal_open_contract\": 1,\n" +
+                    "  \"contract_id\": ${mainViewModel.clickedContractID},\n" +
+                    "  \"subscribe\": 1\n" +
+                    "}"
+        )*/
+        var textYou = "{\n" +
+                "  \"proposal_open_contract\": 1,\n" +
+                "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
+                "  \"subscribe\": 1\n" +
+                "}"
+
+        Log.d("MUL_MUL", textYou)
+    }
+
 
     private fun tradeMultiplier() {
         authWebSocket?.send(

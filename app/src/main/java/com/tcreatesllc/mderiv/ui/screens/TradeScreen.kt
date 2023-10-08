@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -36,13 +34,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -66,26 +62,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcreatesllc.mderiv.R
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tcreatesllc.mderiv.storage.TransactionDetails
 import com.tcreatesllc.mderiv.ui.AppViewModelProvider
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart1
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.lifecycle.MutableLiveData
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart2
 import java.lang.Exception
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val screenWidth = LocalConfiguration.current.screenWidthDp
 
-    var accBalance = viewModel.accountBalance.observeAsState(0.0f)
-    var accCurr = viewModel.accountCurr.observeAsState("EUR")
-    var accList = viewModel.accountList.observeAsState()
+    var accBalance = mainViewModel.accountBalance.observeAsState(0.0f)
+    var accCurr = mainViewModel.accountCurr.observeAsState("EUR")
+    var accList = mainViewModel.accountList.observeAsState()
 
     //var listAccReady = viewModel.listAccsReady.observeAsState("NO")
 
@@ -198,7 +192,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
     // remember the selected item
     var selectedItemMarkets by remember {
-        mutableStateOf(viewModel.currentTradeSymbolKey.value)
+        mutableStateOf(mainViewModel.currentTradeSymbolKey.value)
     }
 
     var isExpandedMultipliers by remember {
@@ -224,7 +218,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
     var textSP by rememberSaveable { mutableStateOf("0.10") }
     var textMul by rememberSaveable { mutableStateOf(listItemsMultipliers[0].substring(1)) }
 
-    var listOpenPositions = viewModel.listOpenPositions.observeAsState()
+    var listOpenPositions = mainViewModel.listOpenPositions.observeAsState()
     /*val recentTenOpenPositions by viewModel.recentTenPositions.collect{
         listOf(it)
     }
@@ -352,7 +346,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     )
                                 )
 
-                                viewModel.userLoginID.value = selectedOption.value.substring(
+                                mainViewModel.userLoginID.value = selectedOption.value.substring(
                                     1,
                                     selectedOption.value.length - 1
                                 )
@@ -448,12 +442,14 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                 for (e in holderListContract.withIndex()) {
                                     clickedContractList.add(e.index, e.value)
                                 }
-                                viewModel.clickedContractList.value = clickedContractList
-                                viewModel.clickedContractID.value = holderListContract[0]
+                                mainViewModel.clickedContractList.value = clickedContractList
+                                mainViewModel.clickedContractID.value = holderListContract[0]
 
                                 showBottomSheet2 = true
 
-                                viewModel.streamContract.value == "YES"
+                                mainViewModel.streamContract.value == "YES"
+                                mainViewModel.subcribeIt.value = true
+
                             },
                             label = { Text("View details") }
                         )
@@ -479,8 +475,8 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
             }
 
             ComposeChart1(
-                chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
-                viewModel
+                chartEntryModelProducer = mainViewModel.customStepChartEntryModelProducer,
+                mainViewModel
             )
 
         }
@@ -557,8 +553,8 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                             },
                             onClick = {
                                 selectedItemMarkets = selectedOption.key
-                                viewModel.currentTradeSymbol.value = selectedOption.value
-                                viewModel.currentTradeSymbolKey.value = selectedOption.key
+                                mainViewModel.currentTradeSymbol.value = selectedOption.value
+                                mainViewModel.currentTradeSymbolKey.value = selectedOption.key
                                 isExpandedMarkets = false
                             })
                     }
@@ -633,7 +629,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                 maxLines = 1,
                                 onValueChange = {
                                     textStake = it
-                                    viewModel.textStake.value = textStake
+                                    mainViewModel.textStake.value = textStake
                                 },
                                 placeholder = {
                                     Text(
@@ -703,7 +699,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                                 selectedItemMultipliers = selectedOption
                                                 textMul = selectedOption.substring(1)
 
-                                                viewModel.textMul.value = textMul
+                                                mainViewModel.textMul.value = textMul
                                                 //Log.d("SMI", selectedOption.substring(1))
                                                 isExpandedMultipliers = false
                                             })
@@ -721,7 +717,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                         ) {
 
                             TextSubTitle(
-                                "Win ${textMul.toInt()}% of your stake for every 1% rise in ${viewModel.currentTradeSymbolKey.value}.",
+                                "Win ${textMul.toInt()}% of your stake for every 1% rise in ${mainViewModel.currentTradeSymbolKey.value}.",
                                 txtTitleModsCenter
                             )
                             Row(modifier = Modifier.width((screenWidth * 0.2).dp)) {
@@ -791,7 +787,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     maxLines = 1,
                                     onValueChange = {
                                         textSP = it
-                                        viewModel.textSP.value = textSP
+                                        mainViewModel.textSP.value = textSP
                                     },
                                     placeholder = {
                                         Text(
@@ -842,7 +838,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     maxLines = 1,
                                     onValueChange = {
                                         textSL = it
-                                        viewModel.textSL.value = textSL
+                                        mainViewModel.textSL.value = textSL
                                     },
                                     placeholder = {
                                         Text(
@@ -873,21 +869,21 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
                         ExtendedFloatingActionButton(
                             onClick = {
-                                viewModel.textOption.value = "MULTDOWN"
+                                mainViewModel.textOption.value = "MULTDOWN"
 
                                 if (textSP == "") {
-                                    viewModel.textSP.value = "0.0"
+                                    mainViewModel.textSP.value = "0.0"
                                 } else {
-                                    viewModel.textSP.value = textSP
+                                    mainViewModel.textSP.value = textSP
                                 }
 
                                 if (textSL == "") {
-                                    viewModel.textSL.value = "0.0"
+                                    mainViewModel.textSL.value = "0.0"
                                 } else {
-                                    viewModel.textSL.value = textSL
+                                    mainViewModel.textSL.value = textSL
                                 }
 
-                                viewModel.tradeIt.value = true
+                                mainViewModel.tradeIt.value = true
                                 showBottomSheet = false
                             },
                             shape = RectangleShape,
@@ -909,20 +905,20 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                         Spacer(Modifier.weight(3f))
                         ExtendedFloatingActionButton(
                             onClick = {
-                                viewModel.textOption.value = "MULTUP"
+                                mainViewModel.textOption.value = "MULTUP"
                                 if (textSP == "") {
-                                    viewModel.textSP.value = "0.10"
+                                    mainViewModel.textSP.value = "0.10"
                                 } else {
-                                    viewModel.textSP.value = textSP
+                                    mainViewModel.textSP.value = textSP
                                 }
 
                                 if (textSL == "") {
-                                    viewModel.textSL.value = "0.10"
+                                    mainViewModel.textSL.value = "0.10"
                                 } else {
-                                    viewModel.textSL.value = textSL
+                                    mainViewModel.textSL.value = textSL
                                 }
 
-                                viewModel.tradeIt.value = true
+                                mainViewModel.tradeIt.value = true
                                 showBottomSheet = false
                             },
                             shape = RectangleShape,
@@ -949,7 +945,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
             }
         }
         if (showBottomSheet2) {
-            Log.i("kkk", viewModel.clickedContractID.value.toString())
+            Log.i("kkk", mainViewModel.clickedContractID.value.toString())
             ModalBottomSheet(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1016,7 +1012,7 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
                             @Composable
                             fun statementsCard(
-                                holderListContract: List<String>
+                                holderListContract: MutableLiveData<List<String>>
                             ) {
 
 
@@ -1069,9 +1065,9 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
                                     Balance(
                                         "Market",
-                                        holderListContract[1],
+                                        holderListContract.value?.get(1) ?: "",
                                         "Option",
-                                        holderListContract[2]
+                                        holderListContract.value?.get(2) ?: ""
                                     )
                                     Divider(
                                         thickness = 1.dp,
@@ -1085,38 +1081,43 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     )
                                     Balance(
                                         "Buy. Price",
-                                        holderListContract[3],
+                                        holderListContract.value?.get(3) ?: "",
                                         "Multiplier",
-                                        holderListContract[7]
+                                        holderListContract.value?.get(7) ?: ""
                                     )
 
+                                    Balance(
+                                        "Profit/Loss",
+                                        holderListContract.value?.get(9)?.replaceFirstChar {
+                                            if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
+                                        }
+                                            ?: "",
+                                        "Status",
+                                        holderListContract.value?.get(11) ?: ""
+                                    )
 
                                     Balance(
                                         "Take Profit",
-                                        holderListContract[4],
+                                        holderListContract.value?.get(4) ?: "",
                                         "Stop Loss",
-                                        holderListContract[5]
+                                        holderListContract.value?.get(5) ?: ""
                                     )
-                                    Row(
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .padding(
-                                                start = 20.dp,
-                                                end = 20.dp,
-                                                top = 0.dp,
-                                                bottom = 0.dp
-                                            )
-                                    ) {
-                                        AssistChip(
-                                            onClick = {
-                                                /* for(e in holderListContract.withIndex()){
-                                                     clickedContractList.add(e.index, e.value)
-                                                 }*/
-                                                showBottomSheet2 = true
-                                            },
-                                            label = { Text("View details") }
-                                        )
-                                    }
+
+                                    /*
+                                     e.value.contractID,0
+                                        e.value.marketName,1
+                                        e.value.contractType,2
+                                        e.value.buyPrice,3
+                                        e.value.stopLoss,4
+                                        e.value.takeProfit,5
+                                        e.value.indicativeAmt,6
+                                        e.value.multiplierChosen,7
+                                        e.value.entrySpot,8
+                                        e.value.profitOrLoss,9
+                                        e.value.tickSpotEntryTime,10
+                                        e.value.contractStatusOpenOrClosed,11
+                                        e.value.symbolName12
+                                     */
                                 }
                             }
                             Column(
@@ -1125,12 +1126,12 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
                                     .background(Color.Transparent)
                                     .padding(start = 0.dp, end = 10.dp)
                             ) {
-                                var tempList: MutList<String> = listOf()
+
                                 listOpenPositions.value?.forEach {
                                    try {
 
-                                            it.getValue(viewModel.clickedContractID.value).let{
-                                                    tempList = it
+                                            it.getValue(mainViewModel.clickedContractID.value).let{
+                                                mainViewModel.clickedContractDetails.value = it
                                             }
                                             //Log.i("TEEEST", it.getValue("220437164568").toString())
 
@@ -1142,15 +1143,16 @@ fun TradeScreen(viewModel: MainViewModel = viewModel(factory = AppViewModelProvi
 
                                 }
 
+
                                     statementsCard(
-                                        tempList
+                                        mainViewModel.clickedContractDetails
                                     )
 
                             }
 
                             ComposeChart2(
-                                chartEntryModelProducer = viewModel.customStepChartEntryModelProducer,
-                                viewModel
+                                chartEntryModelProducer = mainViewModel.customStepChartEntryModelProducer,
+                                mainViewModel
                             )
 
                         }

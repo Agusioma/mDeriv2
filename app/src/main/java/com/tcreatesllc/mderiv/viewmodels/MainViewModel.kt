@@ -51,6 +51,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textMul: MutableLiveData<String> = MutableLiveData("10")
     var textOption: MutableLiveData<String> = MutableLiveData("MULTUP")
     var tradeIt: MutableLiveData<Boolean> = MutableLiveData(false)
+    var subcribeIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var userAuthTokenTemp: MutableLiveData<String> = MutableLiveData("")
     var userLoginID: MutableLiveData<String> = MutableLiveData("")
     private val _messages = MutableLiveData<String>()
@@ -118,7 +119,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         MutableLiveData(ArrayDeque())
 
     var clickedContractList: MutableLiveData<List<String>> = MutableLiveData(listOf())
-    val clickedContractDetails: MutableLiveData<Queue<List<String>>> = MutableLiveData(ArrayDeque())
+    val clickedContractDetails: MutableLiveData<List<String>> = MutableLiveData(listOf())
     var streamContract: MutableLiveData<String> = MutableLiveData("NO")
     var clickedContractID: MutableLiveData<String> = MutableLiveData("")
 

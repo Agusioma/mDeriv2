@@ -48,9 +48,9 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
        return contractDAO.getContractCount(id)
     }
 
-    override suspend fun update(id: String?, amount: String?, profit: String?, status: String?) {
+    override suspend fun update(id: String?, amount: String?, profit: String?, status: String?, entry_spot: String?) {
         withContext(Dispatchers.IO) {
-            contractDAO.update(id, amount, profit, status)
+            contractDAO.update(id, amount, profit, status, entry_spot)
         }
     }
 

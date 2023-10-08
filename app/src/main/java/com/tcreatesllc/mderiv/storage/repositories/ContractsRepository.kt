@@ -17,7 +17,8 @@ interface ContractsRepository {
         id: String?,
         amount: String?,
         profit: String?,
-        status: String?
+        status: String?,
+        entry_spot: String?
     )
     suspend fun updateToken(
         id: String?,

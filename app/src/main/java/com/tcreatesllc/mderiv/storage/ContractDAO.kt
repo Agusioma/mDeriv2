@@ -30,12 +30,13 @@ interface ContractDAO {
     @Query("SELECT COUNT(contract_id) AS CHECKER FROM transaction_details WHERE login_id = :id")
     fun getContractCount(id: String?): Flow<Int>
 
-    @Query("UPDATE transaction_details SET current_amount = :amount, profit = :profit, status = :status WHERE contract_id = :id")
+    @Query("UPDATE transaction_details SET current_amount = :amount, profit = :profit, status = :status, entry_spot=:entry_spot  WHERE contract_id = :id")
     fun update(
         id: String?,
         amount: String?,
         profit: String?,
-        status: String?
+        status: String?,
+        entry_spot: String?
     )
 
     @Query("UPDATE temporary_tokens SET auth_token = :newToken WHERE login_id = :id ")
