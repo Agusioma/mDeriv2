@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonParser
 import com.tcreatesllc.mderiv.storage.AppContainer
 import com.tcreatesllc.mderiv.storage.AppDataContainer
 import com.tcreatesllc.mderiv.storage.TemporaryTokens
@@ -41,7 +42,6 @@ class MainActivity : ComponentActivity() {
     // lateinit var container: MainApplication
     private val mainViewModel: MainViewModel by viewModels { AppViewModelProvider.Factory }
 
-    private lateinit var balanceStreamWSlistener: WebSocketListener
     private lateinit var authWSlistener: WebSocketListener
     private val okHttpClient = OkHttpClient()
     private var authWebSocket: WebSocket? = null
@@ -67,6 +67,19 @@ class MainActivity : ComponentActivity() {
             }
 
         }
+        
+        mainViewModel.refreshIt.observe(this) { it ->
+            if (it == true) {
+                mainViewModel.userAuthTokenTemp.observe(this) {
+                    authWebSocket?.send(
+                        "{\n" +
+                                "  \"authorize\": \"${it}\"\n" +
+                                "}"
+                    )
+                }
+            }
+
+        }
 
         mainViewModel.cancelIt.observe(this) {
             if (mainViewModel.cancelIt.value == true) {
@@ -85,7 +98,6 @@ class MainActivity : ComponentActivity() {
         }
 
         authWSlistener = MainSocket(mainViewModel)
-        balanceStreamWSlistener = BalanceStreamer(mainViewModel)
 
         //initialize session
         authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
@@ -109,15 +121,17 @@ class MainActivity : ComponentActivity() {
                     "}"
         )
 
-        lifecycleScope.launch {
-            while (true) {
-                delay(1000)
+                lifecycleScope.launch {
+                    while (true) {
+                    delay(1000L)
 
-                getPrepopulationTicks(curTradeSymbol.value)
+                        getPrepopulationTicks(curTradeSymbol.value)
 
 
-            }
+                    }
+
         }
+
         streamBalance()
 
         //streamTicks("1HZ100V")
@@ -125,6 +139,29 @@ class MainActivity : ComponentActivity() {
         // ATTENTION: This was auto-generated to handle app links.
 
 
+    }
+
+    fun refresh(token: MutableState<String>){
+
+        authWSlistener = MainSocket(mainViewModel)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"forget_all\": \"ticks\"\n" +
+                    "}"
+        )
+
+        //initialize session
+        authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
+        
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"authorize\": \"${token.value}\"\n" +
+                    "}"
+        )
+
+        streamBalance()
+
+        mainViewModel.refreshIt.value = false
     }
 
     private fun streamBalance() {
@@ -262,33 +299,49 @@ class MainActivity : ComponentActivity() {
             .build()
     }
 
+    private fun initTickWebSocketSession(): Request {
+        val websocketURL = "wss://ws.derivws.com/websockets/v3?app_id=39735"
+
+        return Request.Builder()
+            .url(websocketURL)
+            .build()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
 
+
+
+
     private fun handleIntent(intent: Intent) {
         var accTokenMapping: MutableMap<String, String> = mutableMapOf()
-        val appLinkAction = intent.action
         val appLinkData: Uri? = intent.data
         mainViewModel.userLoginID.value = "\"${appLinkData?.getQueryParameter("acct1")}\""
         mainViewModel.userAuthTokenTemp.value = appLinkData?.getQueryParameter("token1")
        // val v = uri.getQueryParameter("v")
         for(i in 1..5){
             if(appLinkData?.getQueryParameter("acct$i")!=null) {
+                Log.i("key-ac",appLinkData?.getQueryParameter("acct$i").toString() )
                 appLinkData?.getQueryParameter("acct$i")?.let {
                     accTokenMapping.put(
                         it,
                         appLinkData?.getQueryParameter("token$i")!!
                     )
                 }
+                Log.i("key-ac",appLinkData?.getQueryParameter("token$i").toString() )
             }
             //appLinkData?.getQueryParameter("acct$i")?.let { Log.i("pp", it) }
         }
         if(accTokenMapping.isNotEmpty()){
+            //mainViewModel.accTokenMapping.value = accTokenMapping2
             mainViewModel.storeAuthToDB(accTokenMapping)
-            mainViewModel.getAuthTokenFromDB(mainViewModel.userLoginID.value.toString())
+
+            mainViewModel.getAuthTokenFromDB(JsonParser().parse(mainViewModel.userLoginID.value).asString)
+            mainViewModel.getRecentTenPos()
         }
+
        //Log.i( "accTokenMapping.toString()",accTokenMapping.toString())
 
     }

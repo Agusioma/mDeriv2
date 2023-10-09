@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "temporary_tokens")
 data class TemporaryTokens(
     @PrimaryKey(autoGenerate = true) var id: Int=0,
-    @ColumnInfo(name = "login_id") var userTradeAccountNo: String?,
+    @ColumnInfo(name = "login_id", index = true) var userTradeAccountNo: String?,
     @ColumnInfo(name = "auth_token") var userTradeAuthToken: String?
 )
 

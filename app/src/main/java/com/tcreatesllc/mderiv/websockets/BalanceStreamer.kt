@@ -9,14 +9,14 @@ import okhttp3.WebSocketListener
 
 
 class BalanceStreamer(
-    private val viewModel: MainViewModel
+    private val mainViewModel: MainViewModel
 ): WebSocketListener() {
 
     private val TAG = "Test"
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
-        viewModel.setStatus(true)
+        mainViewModel.setStatus(true)
         //webSocket.send("Android Device Connected")
         Log.d(TAG, "onOpen: $response")
     }
@@ -24,18 +24,20 @@ class BalanceStreamer(
     override fun onMessage(webSocket: WebSocket, text: String) {
         super.onMessage(webSocket, text)
         //if
-        //viewModel.addBalanceStream(text)
+
         val parser = JsonParser().parse(text).asJsonObject
+        if (JsonParser().parse(text).asJsonObject.get("error") == null) {
 
-            if(JsonParser().parse(text).asJsonObject.get("balance") == null){
-                Log.d(TAG, "onMessage2: ${text}")
-            }else{
-                viewModel.addBalanceStream(text)
+            if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
+                mainViewModel.addPrepopulationTicks(text)
             }
+        } else {
+            mainViewModel.addErrorMessage(text)
+        }
         //Creating JSONObject from String using parser
         //Creating JSONObject from String using parser
 
-        Log.d(TAG, "onMessage2: $parser")
+        Log.d(TAG, "onMessage3: $parser")
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -45,7 +47,7 @@ class BalanceStreamer(
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         super.onClosed(webSocket, code, reason)
-        viewModel.setStatus(false)
+        mainViewModel.setStatus(false)
         Log.d(TAG, "onClosed: $code $reason")
     }
 

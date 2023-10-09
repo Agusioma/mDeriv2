@@ -72,6 +72,7 @@ import com.tcreatesllc.mderiv.ui.charts.ComposeChart1
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.JsonParser
 import com.tcreatesllc.mderiv.ui.charts.ComposeChart2
 import java.lang.Exception
 import java.util.Locale
@@ -359,7 +360,10 @@ openDialogError.value = true
                                     )
                                 )
                                 mainViewModel.userLoginID.value = selectedOption.value
-                                mainViewModel.getAuthTokenFromDB(mainViewModel.userLoginID.value.toString())
+                                mainViewModel.accTokenMapping.value?.keys
+
+                                mainViewModel.getAuthTokenFromDB(JsonParser().parse(selectedOption.value).asString)
+                                mainViewModel.refreshIt.value = true
                                 isExpanded = false
                             })
                     }

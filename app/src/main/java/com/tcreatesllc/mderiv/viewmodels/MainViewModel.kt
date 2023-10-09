@@ -65,7 +65,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textProfitOrLoss: MutableLiveData<String> = MutableLiveData("0")
     var textStatus: MutableLiveData<String> = MutableLiveData("0")
     var boolFire: MutableLiveData<Boolean> = MutableLiveData(false)
-
+    var refreshIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var tempList: MutableSet<Map<String, String>> = mutableSetOf()
 
     //var tempListTicks: MutableState<Queue<Float>> = mutableStateOf(java.util.ArrayDeque())
@@ -135,30 +135,40 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var clickedContractThresholdMarker: MutableLiveData<Float> = MutableLiveData(0.0f)
     var streamContract: MutableLiveData<String> = MutableLiveData("NO")
     var clickedContractID: MutableLiveData<String> = MutableLiveData("")
+    var accTokenMapping: MutableLiveData<Map<String, String>> = MutableLiveData(mapOf())
 
 
-    fun storeAuthToDB(holderMap: MutableMap<String, String>)= viewModelScope.launch(Dispatchers.Main) {
-        holderMap.forEach{
-            contractsRepository.insertTempToken(
-                temporaryTokens = TemporaryTokens(
-                    userTradeAccountNo = it.key,
-                    userTradeAuthToken = it.value
+    fun storeAuthToDB(holderMap: MutableMap<String, String>) =
+        viewModelScope.launch(Dispatchers.Main) {
+            holderMap.forEach {
+                /*contractsRepository.insertTempToken(
+                    temporaryTokens = TemporaryTokens(
+                        userTradeAccountNo = it.key,
+                        userTradeAuthToken = it.value
+                    )
+                )*/
+                Log.i("contractsRepository", "$it")
+                contractsRepository.insertTempToken(
+                    temporaryTokens = TemporaryTokens(
+                        userTradeAccountNo = it.key,
+                        userTradeAuthToken = it.value
+                    )
                 )
-            )
+            }
         }
-    }
 
-    fun getAuthTokenFromDB(loginID: String)= viewModelScope.launch(Dispatchers.Main) {
-        Log.i("userTradeAuthToken", loginID)
-        try{
-            contractsRepository.getAuthToken("CR5937830").collect{
-                Log.i("NOOO", it.userTradeAuthToken.toString())
+    fun getAuthTokenFromDB(loginID: String) = viewModelScope.launch(Dispatchers.Main) {
+
+        try {
+            contractsRepository.getAuthToken(loginID).collect {
+                Log.i("NOOO", "${it.userTradeAuthToken}")
                 userAuthTokenTemp.value = it.userTradeAuthToken.toString()
             }
-        }catch(e:Exception){
+        } catch (e: Exception) {
             Log.i("Exception", e.toString())
         }
     }
+
     //ws methods - START
     fun addAuthDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
         if (_socketStatus.value == true) {
@@ -321,9 +331,9 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
             val parser = JsonParser().parse(message).asJsonObject
             var errorMessageRes = parser.get("error").asJsonObject.get("message").asString
-            if(errorMessageRes == "You are already subscribed to proposal_open_contract.") {
+            if (errorMessageRes == "You are already subscribed to proposal_open_contract.") {
                 openDialogError.value = false
-            }else{
+            } else {
                 openDialogError.value = true
             }
             errorMessage.value = errorMessageRes
@@ -348,7 +358,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     fun updateContractDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
         if (_socketStatus.value == true) {
             //de_que.value?.clear()
-           // comparator_queue.value.clear()
+            // comparator_queue.value.clear()
             try {
                 val parser = JsonParser().parse(message).asJsonObject
                 var buy_Response = parser.get("proposal_open_contract").asJsonObject
@@ -425,7 +435,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                     // it.getValue()
 
                 }
-            }catch(e: Exception){
+            } catch (e: Exception) {
                 Log.e("EXception!!", "BAAD!")
             }
             /*
@@ -448,74 +458,80 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         _socketStatus.value = status
     }
 
-    init {
-        viewModelScope.launch {
 
-            while (currentCoroutineContext().isActive) {
+     fun getRecentTenPos() = viewModelScope.launch {
 
-                // listOpenPositions.value.
-                contractsRepository.getRecentTenContracts("CR5937830").collect {
-                    listOpenPositions.value?.clear()
+         while (currentCoroutineContext().isActive) {
 
-                    for (e in it.withIndex()) {
+                 // listOpenPositions.value.
+                 try {
+                     contractsRepository.getRecentTenContracts(JsonParser().parse(userLoginID.value).asString)
+                         .collect {
+                             listOpenPositions.value?.clear()
 
-                        //e.value
-                        listOpenPositions.value?.add(
-                            mapOf(
-                                Pair(
-                                    e.value.contractID, listOf(
-                                        e.value.contractID,
-                                        e.value.marketName,
-                                        e.value.contractType,
-                                        e.value.buyPrice,
-                                        e.value.stopLoss,
-                                        e.value.takeProfit,
-                                        e.value.indicativeAmt,
-                                        e.value.multiplierChosen,
-                                        e.value.entrySpot,
-                                        e.value.profitOrLoss,
-                                        e.value.tickSpotEntryTime,
-                                        e.value.contractStatusOpenOrClosed,
-                                        e.value.symbolName
-                                    ) as List<String>
-                                )
-                            )
-                        )
-                    }
+                             for (e in it.withIndex()) {
 
-                }
+                                 //e.value
+                                 listOpenPositions.value?.add(
+                                     mapOf(
+                                         Pair(
+                                             e.value.contractID, listOf(
+                                                 e.value.contractID,
+                                                 e.value.marketName,
+                                                 e.value.contractType,
+                                                 e.value.buyPrice,
+                                                 e.value.stopLoss,
+                                                 e.value.takeProfit,
+                                                 e.value.indicativeAmt,
+                                                 e.value.multiplierChosen,
+                                                 e.value.entrySpot,
+                                                 e.value.profitOrLoss,
+                                                 e.value.tickSpotEntryTime,
+                                                 e.value.contractStatusOpenOrClosed,
+                                                 e.value.symbolName
+                                             ) as List<String>
+                                         )
+                                     )
+                                 )
+                             }
 
-                /*if(streamContract.value == "YES") {
-                    contractsRepository.getContractDetails(clickedContractID.value).collect {
-                        clickedContractDetails.value?.clear()
-                        for (e in it.withIndex()) {
-                            clickedContractDetails.value?.add(
-                                listOf(
-                                    e.value.contractID,
-                                    e.value.marketName,
-                                    e.value.contractType,
-                                    e.value.buyPrice,
-                                    e.value.stopLoss,
-                                    e.value.takeProfit,
-                                    e.value.indicativeAmt,
-                                    e.value.multiplierChosen,
-                                    e.value.entrySpot,
-                                    e.value.profitOrLoss,
-                                    e.value.tickSpotEntryTime,
-                                    e.value.contractStatusOpenOrClosed,
-                                    e.value.symbolName
-                                ) as List<String>
-                            )
-                        }
+                         }
+                 } catch (e: Exception) {
+                     Log.e("oo", e.toString())
+                 }
 
 
-                    }
-                }*/
+             /*if(streamContract.value == "YES") {
+                 contractsRepository.getContractDetails(clickedContractID.value).collect {
+                     clickedContractDetails.value?.clear()
+                     for (e in it.withIndex()) {
+                         clickedContractDetails.value?.add(
+                             listOf(
+                                 e.value.contractID,
+                                 e.value.marketName,
+                                 e.value.contractType,
+                                 e.value.buyPrice,
+                                 e.value.stopLoss,
+                                 e.value.takeProfit,
+                                 e.value.indicativeAmt,
+                                 e.value.multiplierChosen,
+                                 e.value.entrySpot,
+                                 e.value.profitOrLoss,
+                                 e.value.tickSpotEntryTime,
+                                 e.value.contractStatusOpenOrClosed,
+                                 e.value.symbolName
+                             ) as List<String>
+                         )
+                     }
 
-                //listOpenPositions.values = recentTenPositions
-            }
-        }
-    }
+
+                 }
+             }*/
+
+             //listOpenPositions.values = recentTenPositions
+         }
+     }
+
 
     private companion object {
         const val MULTI_ENTRIES_COMBINED = 3
