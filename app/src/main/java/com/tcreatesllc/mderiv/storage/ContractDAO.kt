@@ -18,7 +18,7 @@ interface ContractDAO {
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time DESC LIMIT 10")
     fun getRecentTenContracts(id: String?): Flow<List<TransactionDetails>>
 
-    @Query("SELECT * FROM temporary_tokens WHERE login_id = :id")
+    @Query("SELECT DISTINCT * FROM temporary_tokens WHERE login_id = :id")
     fun getAuthToken(id: String?): Flow<TemporaryTokens>
 
     @Query("SELECT * FROM transaction_details WHERE login_id = :id ORDER BY entry_tick_time")

@@ -1,37 +1,32 @@
 package com.tcreatesllc.mderiv
 
 import BalanceStreamer
-import android.app.Application
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
-import com.tcreatesllc.mderiv.ui.screens.TradeScreen
-import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
-import androidx.activity.viewModels
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.tcreatesllc.mderiv.storage.AppContainer
 import com.tcreatesllc.mderiv.storage.AppDataContainer
-import com.tcreatesllc.mderiv.storage.MDerivDatabase
-import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
-import com.tcreatesllc.mderiv.storage.repositories.RepositoryImpl
+import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.ui.AppViewModelProvider
+import com.tcreatesllc.mderiv.ui.screens.TradeScreen
+import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
 import com.tcreatesllc.mderiv.viewmodels.MainViewModel
 import com.tcreatesllc.mderiv.websockets.MainSocket
 import kotlinx.coroutines.delay
@@ -57,6 +52,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         container = AppDataContainer(this)
+        handleIntent(intent)
         //  mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         //  mainViewModel = ViewModelProvider(this).get( )
 
@@ -109,10 +105,10 @@ class MainActivity : ComponentActivity() {
 
         authWebSocket?.send(
             "{\n" +
-                    "  \"authorize\": \"a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN\"\n" +
+                    "  \"authorize\": \"${mainViewModel.userAuthTokenTemp.value}\"\n" +
                     "}"
         )
-        mainViewModel.userAuthTokenTemp.value = "a1-UJeCdXTnSVpX7D0kP6EEC9kFYUADN"
+
         lifecycleScope.launch {
             while (true) {
                 delay(1000)
@@ -127,10 +123,8 @@ class MainActivity : ComponentActivity() {
         //streamTicks("1HZ100V")
 
         // ATTENTION: This was auto-generated to handle app links.
-        val appLinkIntent: Intent = intent
-        val appLinkAction: String? = appLinkIntent.action
-        val appLinkData: Uri? = appLinkIntent.data
-        handleIntent(intent)
+
+
     }
 
     private fun streamBalance() {
@@ -274,19 +268,29 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
+        var accTokenMapping: MutableMap<String, String> = mutableMapOf()
         val appLinkAction = intent.action
         val appLinkData: Uri? = intent.data
-        Log.i("LINK!", appLinkData.toString())
-        /*if (Intent.ACTION_VIEW == appLinkAction) {
-            appLinkData?.lastPathSegment?.also { recipeId ->
-                Uri.parse("/")
-                    .buildUpon()
-                    .appendPath(recipeId)
-                    .build().also { appData ->
-                        //showRecipe(appData)
-                    }
+        mainViewModel.userLoginID.value = "\"${appLinkData?.getQueryParameter("acct1")}\""
+        mainViewModel.userAuthTokenTemp.value = appLinkData?.getQueryParameter("token1")
+       // val v = uri.getQueryParameter("v")
+        for(i in 1..5){
+            if(appLinkData?.getQueryParameter("acct$i")!=null) {
+                appLinkData?.getQueryParameter("acct$i")?.let {
+                    accTokenMapping.put(
+                        it,
+                        appLinkData?.getQueryParameter("token$i")!!
+                    )
+                }
             }
-        }*/
+            //appLinkData?.getQueryParameter("acct$i")?.let { Log.i("pp", it) }
+        }
+        if(accTokenMapping.isNotEmpty()){
+            mainViewModel.storeAuthToDB(accTokenMapping)
+            mainViewModel.getAuthTokenFromDB(mainViewModel.userLoginID.value.toString())
+        }
+       //Log.i( "accTokenMapping.toString()",accTokenMapping.toString())
+
     }
 
     fun hideSystemUIAndDisableAutorotation() {

@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -34,6 +36,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -57,6 +60,7 @@ import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -184,7 +188,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
     // remember the selected item
     var selectedItem by remember {
-        mutableStateOf("CR5937830")
+        mutableStateOf(mainViewModel.userLoginID.value)
     }
 
     var isExpandedMarkets by remember {
@@ -219,6 +223,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
     var textSP by rememberSaveable { mutableStateOf("0.10") }
     var textMul by rememberSaveable { mutableStateOf(listItemsMultipliers[0].substring(1)) }
 
+
+
     var listOpenPositions = mainViewModel.listOpenPositions.observeAsState()
     /*val recentTenOpenPositions by viewModel.recentTenPositions.collect{
         listOf(it)
@@ -228,6 +234,13 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
 
     val openDialog = remember { mutableStateOf(false) }
+    var openDialogError = remember { mutableStateOf(false) }
+
+    if(mainViewModel.openDialogError.observeAsState().value == true){
+openDialogError.value = true
+        openDialog.value = false
+    }
+
 
 
     //var listYou: List<TransactionDetails> = listOf(recentTenOpenPositions) as List<TransactionDetails>
@@ -268,7 +281,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                 .padding(bottom = 5.dp, top = 5.dp)
         ) {
 
-            TextSubTitleBold("Open Positions", txtSubTitleMods)
+            TextSubTitleBold("Recent Positions", txtSubTitleMods)
             /*          val txtTitleModsViewAll = Modifier
                           .padding(horizontal = (screenWidth * 0.05).dp)
           */
@@ -345,11 +358,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                         selectedOption.value.length - 1
                                     )
                                 )
-
-                                mainViewModel.userLoginID.value = selectedOption.value.substring(
-                                    1,
-                                    selectedOption.value.length - 1
-                                )
+                                mainViewModel.userLoginID.value = selectedOption.value
+                                mainViewModel.getAuthTokenFromDB(mainViewModel.userLoginID.value.toString())
                                 isExpanded = false
                             })
                     }
@@ -463,20 +473,28 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
             }
             LazyColumn(
                 userScrollEnabled = true,
+                verticalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .height((screenHeight * 0.60).dp)
                     .background(Color.Transparent)
                     .padding(start = 0.dp, end = 10.dp)
             ) {
+                if(listOpenPositions.value?.isNotEmpty() == true){
+                    listOpenPositions.value?.forEach {
+                        it.values.forEach {
+                            item {
 
-                listOpenPositions.value?.forEach {
-                    it.values.forEach {
-                        item {
-
-                            statementsCard(holderListContract = it)
+                                statementsCard(holderListContract = it)
+                            }
                         }
                     }
+                }else{
+                    item {
+
+                        TextSubTitle("The 10 recently traded\ncontracts will appear here.\nHappy trading!", txtTitleModsCenter)
+                    }
                 }
+
             }
 
             ComposeChart1(
@@ -890,6 +908,11 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
                                 mainViewModel.tradeIt.value = true
                                 showBottomSheet = false
+                                if(openDialogError.value == true) {
+                                    openDialog.value = false
+                                }else{
+                                    openDialog.value = true
+                                }
                             },
                             shape = RectangleShape,
                             icon = {
@@ -925,6 +948,11 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
                                 mainViewModel.tradeIt.value = true
                                 showBottomSheet = false
+                                if(openDialogError.value == true) {
+                                    openDialog.value = false
+                                }else{
+                                    openDialog.value = true
+                                }
                             },
                             shape = RectangleShape,
                             icon = {
@@ -1206,6 +1234,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             Button(
                                 onClick = {
                                     mainViewModel.cancelIt.value = true
+
                                 },
                                 shape = RectangleShape,
                             ) {
@@ -1224,19 +1253,92 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
             }
         }
 
-        /* if (openDialog.value) {
-             AlertDialog(
-                 onDismissRequest = {
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    // Dismiss the dialog when the user clicks outside the dialog or on the back
+                    // button. If you want to disable that functionality, simply use an empty
+                    // onDismissRequest.
+                    //openDialog.value = false
+                }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight(),
+                    shape = MaterialTheme.shapes.extraSmall,
+                    tonalElevation = AlertDialogDefaults.TonalElevation
+                ) {
+                    Column(modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextSubTitleBold("SUCCESS", txtTitleModsCenter)
+                        Spacer(modifier = Modifier.height(15.dp))
+                        TextSubTitle("Your trade has been placed successfully. Close this dialog and click on View details to view the trade's realtime updates", txtTitleModsCenter)
 
-                     // Dismiss the dialog when the user clicks outside the dialog or on the back
-                     // button. If you want to disable that functionality, simply use an empty
-                     // onDismissRequest.
-                     openDialog.value = false
-                 }
-             ) {
+                       /* Text(
+                            textAlign = TextAlign.Center,
+                            text = "This area typically contains the supportive text " +
+                                    "which presents the details regarding the Dialog's purpose.",
+                        )*/
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            shape = RectangleShape,
+                            onClick = {
+                                openDialog.value = false
+                            }
+                        ) {
+                            Text("OK, close this", fontFamily = mDerivDigitFamily, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+         }
 
-             }
-         }*/
+        if (openDialogError.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    // Dismiss the dialog when the user clicks outside the dialog or on the back
+                    // button. If you want to disable that functionality, simply use an empty
+                    // onDismissRequest.
+                    //openDialog.value = false
+                }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight(),
+                    shape = MaterialTheme.shapes.extraSmall,
+                    tonalElevation = AlertDialogDefaults.TonalElevation
+                ) {
+                    Column(modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextSubTitleBold("FAILED", txtTitleModsCenter)
+                        Spacer(modifier = Modifier.height(15.dp))
+                        mainViewModel.errorMessage.observeAsState().value?.let { TextSubTitle(it, txtTitleModsCenter) }
+
+                        /* Text(
+                             textAlign = TextAlign.Center,
+                             text = "This area typically contains the supportive text " +
+                                     "which presents the details regarding the Dialog's purpose.",
+                         )*/
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            shape = RectangleShape,
+                            onClick = {
+                                openDialogError.value = false
+                                showBottomSheet = true
+                                mainViewModel.openDialogError.value = false
+
+                            }
+                        ) {
+                            Text("Try again", fontFamily = mDerivDigitFamily, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
 
     }
 

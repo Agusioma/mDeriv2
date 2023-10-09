@@ -25,7 +25,7 @@ class MainSocket(
         super.onMessage(webSocket, text)
 
         val parser = JsonParser().parse(text).asJsonObject
-        if (JsonParser().parse(text).asJsonObject.get("ping") == null) {
+        if (JsonParser().parse(text).asJsonObject.get("error") == null) {
             if (JsonParser().parse(text).asJsonObject.get("authorize") !== null) {
                 mainViewModel.addAuthDetails(text)
             } else if (JsonParser().parse(text).asJsonObject.get("balance") !== null) {
@@ -40,7 +40,10 @@ class MainSocket(
             } else if (JsonParser().parse(text).asJsonObject.get("proposal_open_contract") !== null) {
                 //viewModel.processTickStream(text)
                 mainViewModel.updateContractDetails(text)
+
             }
+        } else {
+            mainViewModel.addErrorMessage(text)
         }
         //Creating JSONObject from String using parser
         //Creating JSONObject from String using parser
