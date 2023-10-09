@@ -210,7 +210,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
     var showBottomSheet by remember { mutableStateOf(false) }
     var showBottomSheet2 by remember { mutableStateOf(false) }
 
-
+    selectedItemMarkets = mainViewModel.currentTradeSymbolKey.observeAsState().value
     var (spCheckedState, spOnStateChange) = remember { mutableStateOf(false) }
     var (slCheckedState, slOnStateChange) = remember { mutableStateOf(true) }
 
@@ -225,7 +225,6 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
     }
 
    // viewModel.getOpenPositions()*/
-
 
 
     val openDialog = remember { mutableStateOf(false) }
@@ -443,12 +442,14 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 for (e in holderListContract.withIndex()) {
                                     clickedContractList.add(e.index, e.value)
                                 }
-                                for( i in 1..3) {
-                                    mainViewModel.clickedContractList.value = clickedContractList
-                                    mainViewModel.clickedContractThresholdMarker.value =
-                                        clickedContractList.get(8).toFloat()
-                                    mainViewModel.clickedContractID.value = holderListContract[0]
-                                }
+                                mainViewModel.currentTradeSymbol.value = clickedContractList.get(12)
+                                mainViewModel.currentTradeSymbolKey.value = listItemsMarkets.entries.find {
+                                    it.value == clickedContractList.get(12)
+                                }?.key
+                                mainViewModel.clickedContractList.value = clickedContractList
+                                mainViewModel.clickedContractThresholdMarker.value =
+                                    clickedContractList.get(8).toFloat()
+                                mainViewModel.clickedContractID.value = holderListContract[0]
                                 showBottomSheet2 = true
 
                                 mainViewModel.streamContract.value == "YES"
@@ -997,7 +998,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 .padding(bottom = 5.dp, top = 5.dp)
                         ) {
 
-                            TextSubTitleBold("Open Positions", txtTitleModsCenter)
+                            TextSubTitleBold("Contract", txtTitleModsCenter)
                             /*          val txtTitleModsViewAll = Modifier
                                           .padding(horizontal = (screenWidth * 0.05).dp)
                           */
@@ -1021,16 +1022,22 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 mainViewModel.clickedContractList.value = holderListContract.value
                                 mainViewModel.clickedContractThresholdMarker.value =
                                     holderListContract.value?.get(8)?.toFloat()
-                                Log.i("TTT", mainViewModel.clickedContractThresholdMarker.value.toString())
-                                var indicativeAmt : MutableState<String> =remember{ mutableStateOf("0")}
-                                var pOl: MutableState<String> =remember{ mutableStateOf("0")}
-                                var statusOoC: MutableState<String> =remember{ mutableStateOf("0")}
-                                if (mainViewModel.boolFire.value == false){
+                                Log.i(
+                                    "TTT",
+                                    mainViewModel.clickedContractThresholdMarker.value.toString()
+                                )
+                                var indicativeAmt: MutableState<String> =
+                                    remember { mutableStateOf("0") }
+                                var pOl: MutableState<String> = remember { mutableStateOf("0") }
+                                var statusOoC: MutableState<String> =
+                                    remember { mutableStateOf("0") }
+                                if (mainViewModel.boolFire.value == false) {
                                     indicativeAmt.value = holderListContract.value?.get(6) ?: ""
-                                   pOl.value = holderListContract.value?.get(9) ?: ""
-                                     statusOoC.value = holderListContract.value?.get(11) ?: ""
-                                }else{
-                                    indicativeAmt.value = mainViewModel.textIndicativeAmt.value.toString()
+                                    pOl.value = holderListContract.value?.get(9) ?: ""
+                                    statusOoC.value = holderListContract.value?.get(11) ?: ""
+                                } else {
+                                    indicativeAmt.value =
+                                        mainViewModel.textIndicativeAmt.value.toString()
                                     pOl.value = mainViewModel.textProfitOrLoss.value.toString()
                                     statusOoC.value = mainViewModel.textStatus.value.toString()
                                 }
@@ -1039,7 +1046,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 ElevatedCard(
                                     shape = RectangleShape,
                                     elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 6.dp
+                                        defaultElevation = 0.dp
                                     ),
                                     modifier = Modifier
                                         .padding(
@@ -1148,25 +1155,25 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             ) {
 
                                 listOpenPositions.value?.forEach {
-                                   try {
+                                    try {
 
-                                            it.getValue(mainViewModel.clickedContractID.value).let{
-                                                mainViewModel.clickedContractDetails.value = it
-                                            }
-                                            //Log.i("TEEEST", it.getValue("220437164568").toString())
+                                        it.getValue(mainViewModel.clickedContractID.value).let {
+                                            mainViewModel.clickedContractDetails.value = it
+                                        }
+                                        //Log.i("TEEEST", it.getValue("220437164568").toString())
 
-                                   } catch (e: Exception) {
+                                    } catch (e: Exception) {
 
-                                   }
+                                    }
 
                                     // it.getValue()
 
                                 }
 
 
-                                    statementsCard(
-                                        mainViewModel.clickedContractDetails
-                                    )
+                                statementsCard(
+                                    mainViewModel.clickedContractDetails
+                                )
 
                             }
 
@@ -1198,6 +1205,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             Spacer(Modifier.weight(3f))
                             Button(
                                 onClick = {
+                                    mainViewModel.cancelIt.value = true
                                 },
                                 shape = RectangleShape,
                             ) {

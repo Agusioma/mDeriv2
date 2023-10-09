@@ -43,24 +43,26 @@ import okhttp3.WebSocketListener
 
 class MainActivity : ComponentActivity() {
     //private lateinit var mainViewModel: MainViewModel
-   // lateinit var container: MainApplication
-   private val mainViewModel: MainViewModel by viewModels { AppViewModelProvider.Factory }
+    // lateinit var container: MainApplication
+    private val mainViewModel: MainViewModel by viewModels { AppViewModelProvider.Factory }
 
     private lateinit var balanceStreamWSlistener: WebSocketListener
     private lateinit var authWSlistener: WebSocketListener
     private val okHttpClient = OkHttpClient()
     private var authWebSocket: WebSocket? = null
+
     //private var balanceStreamWebSocket: WebSocket? = null
     var curTradeSymbol: MutableState<String> = mutableStateOf("1HZ100V")
     lateinit var container: AppContainer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         container = AppDataContainer(this)
-      //  mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-      //  mainViewModel = ViewModelProvider(this).get( )
+        //  mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        //  mainViewModel = ViewModelProvider(this).get( )
 
         mainViewModel.currentTradeSymbol.observe(this) {
             curTradeSymbol.value = it
+            Log.i("curTradeSymbol", curTradeSymbol.value)
         }
 
         mainViewModel.tradeIt.observe(this) {
@@ -69,6 +71,15 @@ class MainActivity : ComponentActivity() {
             }
 
         }
+
+        mainViewModel.cancelIt.observe(this) {
+            if (mainViewModel.cancelIt.value == true) {
+                mainViewModel.clickedContractID.observe(this) {
+                    cancelMultiplier(it)
+                }
+            }
+        }
+
 
         mainViewModel.subcribeIt.observe(this) {
             if (mainViewModel.subcribeIt.value == true) {
@@ -124,7 +135,7 @@ class MainActivity : ComponentActivity() {
 
     private fun streamBalance() {
         //okHttpClient.
-       Thread.sleep(3000)
+        Thread.sleep(3000)
         authWebSocket?.send(
             "{\n" +
                     "  \"balance\": 1,\n" +
@@ -151,6 +162,24 @@ class MainActivity : ComponentActivity() {
         Log.d("MUL_MUL", textYou)
     }
 
+    private fun cancelMultiplier(contractID: String) {
+         authWebSocket?.send(
+               "{\n" +
+                       "  \"sell\": $contractID,\n" +
+                       "  \"price\": 0\n" +
+                       "}"
+           )
+
+        var textYou = "{\n" +
+                "  \"sell\": $contractID,\n" +
+                "  \"price\": 0\n" +
+                "}"
+
+        Log.d("MUL_MUL", textYou)
+
+        mainViewModel.tradeIt.value = false
+
+    }
 
     private fun tradeMultiplier() {
         authWebSocket?.send(
@@ -197,7 +226,7 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    private fun getPrepopulationTicks(marketIndex: String){
+    private fun getPrepopulationTicks(marketIndex: String) {
         //Thread.sleep(1000)
         authWebSocket?.send(
             "{\n" +
@@ -211,7 +240,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun streamTicks(marketIndex: String){
+    private fun streamTicks(marketIndex: String) {
         Thread.sleep(5000)
         authWebSocket?.send(
             "{\n" +
@@ -221,7 +250,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private suspend fun pingDeriv(){
+    private suspend fun pingDeriv() {
 
         //delay(1000)
         authWebSocket?.send(

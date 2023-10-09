@@ -190,10 +190,10 @@ private fun rememberThresholdLine(viewModel: MainViewModel): ThresholdLine {
     }
 }
 
-private const val COLOR_1_CODE = 0xffa485e0
+private const val COLOR_1_CODE = 0xff00A79E
 private const val PERSISTENT_MARKER_X = 599f
 
-private const val COLOR_2_CODE = 0xffd3d826
+private const val COLOR_2_CODE = 0xffffffff
 private val color1 = Color(COLOR_1_CODE)
 private val color2 = Color(COLOR_2_CODE)
 private val chartColors = listOf(color1)

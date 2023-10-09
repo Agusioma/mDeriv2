@@ -52,6 +52,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textMul: MutableLiveData<String> = MutableLiveData("10")
     var textOption: MutableLiveData<String> = MutableLiveData("MULTUP")
     var tradeIt: MutableLiveData<Boolean> = MutableLiveData(false)
+    var cancelIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var subcribeIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var userAuthTokenTemp: MutableLiveData<String> = MutableLiveData("")
     var userLoginID: MutableLiveData<String> = MutableLiveData("")
