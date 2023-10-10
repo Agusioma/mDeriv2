@@ -459,13 +459,14 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     }
 
 
-     fun getRecentTenPos() = viewModelScope.launch {
+     fun getRecentTenPos(loginID: String) = viewModelScope.launch(Dispatchers.Main) {
+         Log.i("getRecentTenPoS", "FIRED ${loginID}")
 
-         while (currentCoroutineContext().isActive) {
+
 
                  // listOpenPositions.value.
                  try {
-                     contractsRepository.getRecentTenContracts(JsonParser().parse(userLoginID.value).asString)
+                     contractsRepository.getRecentTenContracts(userLoginID.value)
                          .collect {
                              listOpenPositions.value?.clear()
 
@@ -494,6 +495,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                                      )
                                  )
                              }
+                             Log.i("getRecentTenPoS", "FIRED ${listOpenPositions.value}")
 
                          }
                  } catch (e: Exception) {
@@ -529,7 +531,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
              }*/
 
              //listOpenPositions.values = recentTenPositions
-         }
+
      }
 
 

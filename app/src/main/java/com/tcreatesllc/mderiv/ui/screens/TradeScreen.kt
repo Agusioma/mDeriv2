@@ -236,9 +236,10 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
     val openDialog = remember { mutableStateOf(false) }
     var openDialogError = remember { mutableStateOf(false) }
+    var openDialogInfoDummy = remember { mutableStateOf(false) }
 
     if(mainViewModel.openDialogError.observeAsState().value == true){
-openDialogError.value = true
+        openDialogError.value = true
         openDialog.value = false
     }
 
@@ -351,6 +352,13 @@ openDialogError.value = true
                                 )
                             },
                             onClick = {
+                                if(selectedItem == selectedOption.value){
+
+                                    Log.i("SAME?", "${selectedItem} ${selectedOption.value}")
+                                }else{
+                                    Log.i("SAME? NO", "${selectedItem} ${selectedOption.value}")
+                                    openDialogInfoDummy.value = true
+                                }
                                 selectedItem = selectedOption.value
                                 Log.d(
                                     "CLICKED",
@@ -364,7 +372,9 @@ openDialogError.value = true
 
                                 mainViewModel.getAuthTokenFromDB(JsonParser().parse(selectedOption.value).asString)
                                 mainViewModel.refreshIt.value = true
+                                mainViewModel.getRecentTenPos(mainViewModel.userLoginID.value.toString())
                                 isExpanded = false
+
                             })
                     }
                 }
@@ -1338,6 +1348,48 @@ openDialogError.value = true
                             }
                         ) {
                             Text("Try again", fontFamily = mDerivDigitFamily, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (openDialogInfoDummy.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    // Dismiss the dialog when the user clicks outside the dialog or on the back
+                    // button. If you want to disable that functionality, simply use an empty
+                    // onDismissRequest.
+                    //openDialog.value = false
+                }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight(),
+                    shape = MaterialTheme.shapes.extraSmall,
+                    tonalElevation = AlertDialogDefaults.TonalElevation
+                ) {
+                    Column(modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextSubTitleBold("INFO", txtTitleModsCenter)
+                        Spacer(modifier = Modifier.height(15.dp))
+                        TextSubTitle("Your have successfully changed your trading accounts. Current account is ${selectedItem}.", txtTitleModsCenter)
+
+                        /* Text(
+                             textAlign = TextAlign.Center,
+                             text = "This area typically contains the supportive text " +
+                                     "which presents the details regarding the Dialog's purpose.",
+                         )*/
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            shape = RectangleShape,
+                            onClick = {
+                                openDialogInfoDummy.value = false
+                            }
+                        ) {
+                            Text("OK, close this", fontFamily = mDerivDigitFamily, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

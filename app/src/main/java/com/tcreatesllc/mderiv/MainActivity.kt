@@ -339,7 +339,7 @@ class MainActivity : ComponentActivity() {
             mainViewModel.storeAuthToDB(accTokenMapping)
 
             mainViewModel.getAuthTokenFromDB(JsonParser().parse(mainViewModel.userLoginID.value).asString)
-            mainViewModel.getRecentTenPos()
+            mainViewModel.getRecentTenPos(mainViewModel.userLoginID.value.toString())
         }
 
        //Log.i( "accTokenMapping.toString()",accTokenMapping.toString())
