@@ -39,10 +39,8 @@ interface ContractDAO {
         entry_spot: String?
     )
 
-    @Query("UPDATE temporary_tokens SET auth_token = :newToken WHERE login_id = :id ")
-    fun updateToken(
-        id: String?,
-        newToken: String?
-    )
+
+    @Query("DELETE FROM temporary_tokens")
+    fun delete()
 
 }

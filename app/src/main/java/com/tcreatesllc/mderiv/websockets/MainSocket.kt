@@ -28,10 +28,8 @@ class MainSocket(
         if (JsonParser().parse(text).asJsonObject.get("error") == null) {
             if (JsonParser().parse(text).asJsonObject.get("authorize") !== null) {
                 mainViewModel.addAuthDetails(text)
-                Log.d(TAG, "onMessage3: $parser")
             } else if (JsonParser().parse(text).asJsonObject.get("balance") !== null) {
                 mainViewModel.addBalanceStream(text)
-                Log.d(TAG, "onMessage3: $parser")
             } else if (JsonParser().parse(text).asJsonObject.get("history") !== null) {
                 mainViewModel.addPrepopulationTicks(text)
             } else if (JsonParser().parse(text).asJsonObject.get("tick") !== null) {
@@ -39,18 +37,17 @@ class MainSocket(
             } else if (JsonParser().parse(text).asJsonObject.get("buy") !== null) {
                 //viewModel.processTickStream(text)
                 mainViewModel.addInitialBuyDetails(text)
-                Log.d(TAG, "onMessage3: $parser")
             } else if (JsonParser().parse(text).asJsonObject.get("proposal_open_contract") !== null) {
                 //viewModel.processTickStream(text)
                 mainViewModel.updateContractDetails(text)
-                Log.d(TAG, "onMessage3: $parser")
+
             }
         } else {
             mainViewModel.addErrorMessage(text)
         }
         //Creating JSONObject from String using parser
         //Creating JSONObject from String using parser
-
+        //Log.d(TAG, "onMessage3: $parser")
 
     }
 
@@ -68,7 +65,7 @@ class MainSocket(
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.d(TAG, "onFailure: ${t.message} $response")
         super.onFailure(webSocket, t, response)
-        //mainViewModel.fireUnexpectedError()
+       // mainViewModel.fireUnexpectedError()
         mainViewModel.reconnectIT()
     }
 }

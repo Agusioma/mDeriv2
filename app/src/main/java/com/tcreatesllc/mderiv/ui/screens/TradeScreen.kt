@@ -360,7 +360,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                     Log.i("SAME?", "${selectedItem} ${selectedOption.value}")
                                 } else {
                                     Log.i("SAME? NO", "${selectedItem} ${selectedOption.value}")
-                                    openDialogInfoDummy.value = true
+                                    //openDialogInfoDummy.value = true
                                 }
                                 selectedItem = selectedOption.value
                                 Log.d(

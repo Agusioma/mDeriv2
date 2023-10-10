@@ -71,6 +71,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textStatus: MutableLiveData<String> = MutableLiveData("0")
     var boolFire: MutableLiveData<Boolean> = MutableLiveData(false)
     var refreshIt: MutableLiveData<Boolean> = MutableLiveData(false)
+    var refreshBalance: MutableLiveData<Boolean> = MutableLiveData(false)
     var stopIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var tempList: MutableSet<Map<String, String>> = mutableSetOf()
 
@@ -144,6 +145,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var accTokenMapping: MutableLiveData<Map<String, String>> = MutableLiveData(mapOf())
 
     var prevSubscriptionID: MutableLiveData<String> = MutableLiveData("NNN")
+    var streamedBalanceIDLD: MutableLiveData<String> = MutableLiveData("")
     private lateinit var authWSlistener: WebSocketListener
     private val okHttpClient = OkHttpClient()
     private var authWebSocket: WebSocket? = null
@@ -172,6 +174,12 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                     )
                 )
             }
+        }
+
+    fun clearAuthDB() =
+        viewModelScope.launch(Dispatchers.IO) {
+
+                contractsRepository.clearAuthTable()
         }
 
     fun getAuthTokenFromDB(loginID: String) = viewModelScope.launch(Dispatchers.Main) {
@@ -222,7 +230,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         if (_socketStatus.value == true) {
             val parser = JsonParser().parse(message).asJsonObject
             var streamedBalance = parser.get("balance").asJsonObject.get("balance")
-
+            var streamedBalanceID = parser.get("subscription").asJsonObject.get("id").asString
+            streamedBalanceIDLD.value = streamedBalanceID
             accountBalance.value = streamedBalance.asFloat
 
             _messages.value = message
@@ -295,6 +304,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
             val parser = JsonParser().parse(message).asJsonObject
             var buy_Response = parser.get("buy").asJsonObject
             var buy_echo_req = parser.get("echo_req").asJsonObject
+
+            accountBalance.value = buy_Response.get("balance_after").asFloat
 
             prevSubscriptionID.value = parser.get("subscription").asJsonObject.get("id").asString
 

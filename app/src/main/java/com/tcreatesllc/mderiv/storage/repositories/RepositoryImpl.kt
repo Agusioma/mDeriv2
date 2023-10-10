@@ -54,10 +54,12 @@ class RepositoryImpl(private val contractDAO: ContractDAO): ContractsRepository 
         }
     }
 
-    override suspend fun updateToken(id: String?, newToken: String?) {
-        withContext(Dispatchers.IO) {
-            contractDAO.updateToken(id, newToken)
-        }
+
+    override fun clearAuthTable() {
+
+            contractDAO.delete()
+
     }
+
 
 }

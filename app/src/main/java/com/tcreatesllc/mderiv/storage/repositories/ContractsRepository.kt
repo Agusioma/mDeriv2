@@ -20,8 +20,5 @@ interface ContractsRepository {
         status: String?,
         entry_spot: String?
     )
-    suspend fun updateToken(
-        id: String?,
-        newToken: String?
-    )
+   fun clearAuthTable()
 }

@@ -34,6 +34,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.lang.Exception
 
 class MainActivity : ComponentActivity() {
     //private lateinit var mainViewModel: MainViewModel
@@ -65,18 +66,24 @@ class MainActivity : ComponentActivity() {
                 tradeMultiplier()
             }
         }
-        
+
         mainViewModel.refreshIt.observe(this) { it ->
             if (it == true) {
+                //authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
                 mainViewModel.userAuthTokenTemp.observe(this) {
+                    Log.i("mainViewModel.userAuthTokenTemp", it)
+
                     authWebSocket?.send(
                         "{\n" +
                                 "  \"authorize\": \"${it}\"\n" +
                                 "}"
                     )
+                    Log.i("authorize", it)
                 }
-            }
 
+
+                //streamBalance()
+            }
 
         }
 
@@ -119,13 +126,13 @@ class MainActivity : ComponentActivity() {
                     "}"
         )
 
-                lifecycleScope.launch {
-                    while (true) {
-                    delay(1000L)
+        lifecycleScope.launch {
+            while (true) {
+                delay(1000L)
 
-                        getPrepopulationTicks(curTradeSymbol.value)
+                getPrepopulationTicks(curTradeSymbol.value)
 
-                    }
+            }
 
         }
 
@@ -138,13 +145,13 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    fun refresh(token: String){
+    fun refresh(token: String) {
 
         authWSlistener = MainSocket(mainViewModel)
         //initialize session
         authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
 
-        
+
         authWebSocket?.send(
             "{\n" +
                     "  \"authorize\": \"${token}\"\n" +
@@ -167,8 +174,8 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun stopSubscription(){
-        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+    private fun stopSubscription() {
+        if (mainViewModel.prevSubscriptionID.value !== "NNN") {
 
             authWebSocket?.send(
                 "{\n" +
@@ -186,7 +193,7 @@ class MainActivity : ComponentActivity() {
 
     private fun streamContractDetails() {
         Log.i("mainViewModel.prevSubscriptionID.value", "${mainViewModel.prevSubscriptionID.value}")
-        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+        if (mainViewModel.prevSubscriptionID.value !== "NNN") {
 
 
             authWebSocket?.send(
@@ -215,7 +222,7 @@ class MainActivity : ComponentActivity() {
 
             Log.d("MUL_MUL", textYou)
 
-        }else{
+        } else {
             authWebSocket?.send(
                 "{\n" +
                         "  \"proposal_open_contract\": 1,\n" +
@@ -235,12 +242,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun cancelMultiplier(contractID: String) {
-         authWebSocket?.send(
-               "{\n" +
-                       "  \"sell\": $contractID,\n" +
-                       "  \"price\": 0\n" +
-                       "}"
-           )
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"sell\": $contractID,\n" +
+                    "  \"price\": 0\n" +
+                    "}"
+        )
 
         var textYou = "{\n" +
                 "  \"sell\": $contractID,\n" +
@@ -254,7 +261,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun tradeMultiplier() {
-        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+        if (mainViewModel.prevSubscriptionID.value !== "NNN") {
 
 
             authWebSocket?.send(
@@ -288,7 +295,7 @@ class MainActivity : ComponentActivity() {
                         "}"
             )
 
-        }else{
+        } else {
             authWebSocket?.send(
                 "{\n" +
                         "  \"buy\": 1,\n" +
@@ -391,37 +398,40 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
-
     private fun handleIntent(intent: Intent) {
-        var accTokenMapping: MutableMap<String, String> = mutableMapOf()
-        val appLinkData: Uri? = intent.data
-        mainViewModel.userLoginID.value = "\"${appLinkData?.getQueryParameter("acct1")}\""
-        mainViewModel.userAuthTokenTemp.value = appLinkData?.getQueryParameter("token1")
-       // val v = uri.getQueryParameter("v")
-        for(i in 1..5){
-            if(appLinkData?.getQueryParameter("acct$i")!=null) {
-                Log.i("key-ac",appLinkData?.getQueryParameter("acct$i").toString() )
-                appLinkData?.getQueryParameter("acct$i")?.let {
-                    accTokenMapping.put(
-                        it,
-                        appLinkData?.getQueryParameter("token$i")!!
-                    )
+       //. mainViewModel
+        try {
+            mainViewModel.clearAuthDB()
+            var accTokenMapping: MutableMap<String, String> = mutableMapOf()
+            val appLinkData: Uri? = intent.data
+            mainViewModel.userLoginID.value = "\"${appLinkData?.getQueryParameter("acct1")}\""
+            mainViewModel.userAuthTokenTemp.value = appLinkData?.getQueryParameter("token1")
+            // val v = uri.getQueryParameter("v")
+            for (i in 1..5) {
+                if (appLinkData?.getQueryParameter("acct$i") != null) {
+                    Log.i("key-ac", appLinkData?.getQueryParameter("acct$i").toString())
+                    appLinkData?.getQueryParameter("acct$i")?.let {
+                        accTokenMapping.put(
+                            it,
+                            appLinkData?.getQueryParameter("token$i")!!
+                        )
+                    }
+                    Log.i("key-ac", appLinkData?.getQueryParameter("token$i").toString())
                 }
-                Log.i("key-ac",appLinkData?.getQueryParameter("token$i").toString() )
+                //appLinkData?.getQueryParameter("acct$i")?.let { Log.i("pp", it) }
             }
-            //appLinkData?.getQueryParameter("acct$i")?.let { Log.i("pp", it) }
+            if (accTokenMapping.isNotEmpty()) {
+                //mainViewModel.accTokenMapping.value = accTokenMapping2
+                mainViewModel.storeAuthToDB(accTokenMapping)
+
+                mainViewModel.getAuthTokenFromDB(JsonParser().parse(mainViewModel.userLoginID.value).asString)
+                mainViewModel.getRecentTenPos(mainViewModel.userLoginID.value.toString())
+            }
+
+            //Log.i( "accTokenMapping.toString()",accTokenMapping.toString())
+        }catch(e: Exception){
+            Log.i("CLEARException", "$e")
         }
-        if(accTokenMapping.isNotEmpty()){
-            //mainViewModel.accTokenMapping.value = accTokenMapping2
-            mainViewModel.storeAuthToDB(accTokenMapping)
-
-            mainViewModel.getAuthTokenFromDB(JsonParser().parse(mainViewModel.userLoginID.value).asString)
-            mainViewModel.getRecentTenPos(mainViewModel.userLoginID.value.toString())
-        }
-
-       //Log.i( "accTokenMapping.toString()",accTokenMapping.toString())
-
     }
 
     fun hideSystemUIAndDisableAutorotation() {
