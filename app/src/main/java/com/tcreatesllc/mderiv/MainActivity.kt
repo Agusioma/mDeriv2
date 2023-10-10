@@ -1,6 +1,5 @@
 package com.tcreatesllc.mderiv
 
-import BalanceStreamer
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
@@ -24,7 +23,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.JsonParser
 import com.tcreatesllc.mderiv.storage.AppContainer
 import com.tcreatesllc.mderiv.storage.AppDataContainer
-import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.ui.AppViewModelProvider
 import com.tcreatesllc.mderiv.ui.screens.TradeScreen
 import com.tcreatesllc.mderiv.ui.theme.MDerivTheme
@@ -63,9 +61,9 @@ class MainActivity : ComponentActivity() {
 
         mainViewModel.tradeIt.observe(this) {
             if (mainViewModel.tradeIt.value == true) {
+                //stopSubscription()
                 tradeMultiplier()
             }
-
         }
         
         mainViewModel.refreshIt.observe(this) { it ->
@@ -79,6 +77,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+
         }
 
         mainViewModel.cancelIt.observe(this) {
@@ -88,7 +87,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
 
         mainViewModel.subcribeIt.observe(this) {
             if (mainViewModel.subcribeIt.value == true) {
@@ -127,7 +125,6 @@ class MainActivity : ComponentActivity() {
 
                         getPrepopulationTicks(curTradeSymbol.value)
 
-
                     }
 
         }
@@ -141,21 +138,16 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    fun refresh(token: MutableState<String>){
+    fun refresh(token: String){
 
         authWSlistener = MainSocket(mainViewModel)
-        authWebSocket?.send(
-            "{\n" +
-                    "  \"forget_all\": \"ticks\"\n" +
-                    "}"
-        )
-
         //initialize session
         authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
+
         
         authWebSocket?.send(
             "{\n" +
-                    "  \"authorize\": \"${token.value}\"\n" +
+                    "  \"authorize\": \"${token}\"\n" +
                     "}"
         )
 
@@ -175,22 +167,71 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun stopSubscription(){
+        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
+                        "}"
+            )
+            var textYou = "{\n" +
+                    "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
+                    "}"
+
+            Log.d("MUL_MUL", textYou)
+        }
+
+    }
+
     private fun streamContractDetails() {
-        //okHttpClient.
-        authWebSocket?.send(
-            "{\n" +
+        Log.i("mainViewModel.prevSubscriptionID.value", "${mainViewModel.prevSubscriptionID.value}")
+        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+
+
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
+                        "}"
+            )
+            var textYou2 = "{\n" +
+                    "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
+                    "}"
+            Log.d("MUL_MUL", textYou2)
+
+            Thread.sleep(2000L)
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"proposal_open_contract\": 1,\n" +
+                        "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
+                        "  \"subscribe\": 1\n" +
+                        "}"
+            )
+            var textYou = "{\n" +
                     "  \"proposal_open_contract\": 1,\n" +
                     "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
                     "  \"subscribe\": 1\n" +
                     "}"
-        )
-        var textYou = "{\n" +
-                "  \"proposal_open_contract\": 1,\n" +
-                "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
-                "  \"subscribe\": 1\n" +
-                "}"
 
-        Log.d("MUL_MUL", textYou)
+            Log.d("MUL_MUL", textYou)
+
+        }else{
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"proposal_open_contract\": 1,\n" +
+                        "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
+                        "  \"subscribe\": 1\n" +
+                        "}"
+            )
+            var textYou = "{\n" +
+                    "  \"proposal_open_contract\": 1,\n" +
+                    "  \"contract_id\": ${mainViewModel.clickedContractID.value},\n" +
+                    "  \"subscribe\": 1\n" +
+                    "}"
+
+            Log.d("MUL_MUL:ALONE", textYou)
+        }
+
     }
 
     private fun cancelMultiplier(contractID: String) {
@@ -213,25 +254,62 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun tradeMultiplier() {
-        authWebSocket?.send(
-            "{\n" +
-                    "  \"buy\": 1,\n" +
-                    "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
-                    "  \"subscribe\": 1,\n" +
-                    "  \"parameters\":{\n" +
-                    "        \"limit_order\":{\n" +
-                    "            \"take_profit\":${mainViewModel.textSP.value}, \n" +
-                    "            \"stop_loss\":${mainViewModel.textSL.value}\n" +
-                    "        },\n" +
-                    "        \"amount\": ${mainViewModel.textStake.value?.toDouble()},\n" +
-                    "        \"basis\": \"stake\",\n" +
-                    "        \"contract_type\": \"${mainViewModel.textOption.value}\",\n" +
-                    "        \"currency\": \"${mainViewModel.accountCurr.value}\",\n" +
-                    "        \"multiplier\": ${mainViewModel.textMul.value?.toInt()},\n" +
-                    "        \"symbol\": \"${mainViewModel.currentTradeSymbol.value}\"\n" +
-                    "}\n" +
+        if(mainViewModel.prevSubscriptionID.value !== "NNN") {
+
+
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
+                        "}"
+            )
+            var textYou2 = "{\n" +
+                    "  \"forget\": \"${mainViewModel.prevSubscriptionID.value}\"\n" +
                     "}"
-        )
+            Log.d("MUL_MUL", textYou2)
+
+            Thread.sleep(2000L)
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"buy\": 1,\n" +
+                        "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                        "  \"subscribe\": 1,\n" +
+                        "  \"parameters\":{\n" +
+                        "        \"limit_order\":{\n" +
+                        "            \"take_profit\":${mainViewModel.textSP.value}, \n" +
+                        "            \"stop_loss\":${mainViewModel.textSL.value}\n" +
+                        "        },\n" +
+                        "        \"amount\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                        "        \"basis\": \"stake\",\n" +
+                        "        \"contract_type\": \"${mainViewModel.textOption.value}\",\n" +
+                        "        \"currency\": \"${mainViewModel.accountCurr.value}\",\n" +
+                        "        \"multiplier\": ${mainViewModel.textMul.value?.toInt()},\n" +
+                        "        \"symbol\": \"${mainViewModel.currentTradeSymbol.value}\"\n" +
+                        "}\n" +
+                        "}"
+            )
+
+        }else{
+            authWebSocket?.send(
+                "{\n" +
+                        "  \"buy\": 1,\n" +
+                        "  \"price\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                        "  \"subscribe\": 1,\n" +
+                        "  \"parameters\":{\n" +
+                        "        \"limit_order\":{\n" +
+                        "            \"take_profit\":${mainViewModel.textSP.value}, \n" +
+                        "            \"stop_loss\":${mainViewModel.textSL.value}\n" +
+                        "        },\n" +
+                        "        \"amount\": ${mainViewModel.textStake.value?.toDouble()},\n" +
+                        "        \"basis\": \"stake\",\n" +
+                        "        \"contract_type\": \"${mainViewModel.textOption.value}\",\n" +
+                        "        \"currency\": \"${mainViewModel.accountCurr.value}\",\n" +
+                        "        \"multiplier\": ${mainViewModel.textMul.value?.toInt()},\n" +
+                        "        \"symbol\": \"${mainViewModel.currentTradeSymbol.value}\"\n" +
+                        "}\n" +
+                        "}"
+            )
+        }
+
 
         var textYou = "{\n" +
                 "  \"buy\": 1,\n" +

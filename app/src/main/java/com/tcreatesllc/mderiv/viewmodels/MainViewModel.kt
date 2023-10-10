@@ -19,11 +19,16 @@ import com.tcreatesllc.mderiv.MainApplication
 import com.tcreatesllc.mderiv.storage.TemporaryTokens
 import com.tcreatesllc.mderiv.storage.TransactionDetails
 import com.tcreatesllc.mderiv.storage.repositories.ContractsRepository
+import com.tcreatesllc.mderiv.websockets.MainSocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import java.lang.Exception
 import java.util.ArrayDeque
 import java.util.Collections
@@ -66,6 +71,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textStatus: MutableLiveData<String> = MutableLiveData("0")
     var boolFire: MutableLiveData<Boolean> = MutableLiveData(false)
     var refreshIt: MutableLiveData<Boolean> = MutableLiveData(false)
+    var stopIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var tempList: MutableSet<Map<String, String>> = mutableSetOf()
 
     //var tempListTicks: MutableState<Queue<Float>> = mutableStateOf(java.util.ArrayDeque())
@@ -137,7 +143,18 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var clickedContractID: MutableLiveData<String> = MutableLiveData("")
     var accTokenMapping: MutableLiveData<Map<String, String>> = MutableLiveData(mapOf())
 
+    var prevSubscriptionID: MutableLiveData<String> = MutableLiveData("NNN")
+    private lateinit var authWSlistener: WebSocketListener
+    private val okHttpClient = OkHttpClient()
+    private var authWebSocket: WebSocket? = null
 
+    private fun initWebSocketSession(): Request {
+        val websocketURL = "wss://ws.derivws.com/websockets/v3?app_id=38697"
+
+        return Request.Builder()
+            .url(websocketURL)
+            .build()
+    }
     fun storeAuthToDB(holderMap: MutableMap<String, String>) =
         viewModelScope.launch(Dispatchers.Main) {
             holderMap.forEach {
@@ -279,6 +296,8 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
             var buy_Response = parser.get("buy").asJsonObject
             var buy_echo_req = parser.get("echo_req").asJsonObject
 
+            prevSubscriptionID.value = parser.get("subscription").asJsonObject.get("id").asString
+
             contractsRepository.insertTransactionDetails(
                 transactionDetails = TransactionDetails(
                     loginID = userLoginID.value,
@@ -333,23 +352,13 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
             var errorMessageRes = parser.get("error").asJsonObject.get("message").asString
             if (errorMessageRes == "You are already subscribed to proposal_open_contract.") {
                 openDialogError.value = false
-            } else {
+            } else if (errorMessageRes == "Unknown contract sell proposal.") {
+                openDialogError.value = false
+            }else{
                 openDialogError.value = true
             }
             errorMessage.value = errorMessageRes
             dialogTitle.value = "ERROR"
-
-            /*
-
-
-    @ColumnInfo(name = "underlying") var symbolName: String
-)
-             */
-
-            /*contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
-                userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
-                userTradeAuthToken = "HEEEEY"
-            ))*/
 
             _messages.value = message
         }
@@ -357,12 +366,23 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
     fun updateContractDetails(message: String) = viewModelScope.launch(Dispatchers.Main) {
         if (_socketStatus.value == true) {
-            //de_que.value?.clear()
-            // comparator_queue.value.clear()
+
             try {
                 val parser = JsonParser().parse(message).asJsonObject
                 var buy_Response = parser.get("proposal_open_contract").asJsonObject
                 var buy_echo_req = parser.get("echo_req").asJsonObject
+
+                if (buy_Response.get("status").isJsonNull) {
+                    Log.i("CLOSED!", "Contract not open")
+                }else{
+                    try {
+                        prevSubscriptionID.value =
+                            parser.get("subscription").asJsonObject.get("id").asString
+                    }catch(e:Exception){
+                        prevSubscriptionID.value =
+                            "NNN"
+                    }
+                }
 
                 contractsRepository.update(
 
@@ -370,7 +390,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                     amount = (buy_Response.get("profit").asFloat + buy_Response.get("buy_price").asFloat).toString(),
                     profit = buy_Response.get("profit").asString,
                     status = if (buy_Response.get("status").isJsonNull) {
-                        "Closed"
+                        "Expired"
                     } else {
                         buy_Response.get("status").asString
                     },
@@ -436,22 +456,37 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
 
                 }
             } catch (e: Exception) {
-                Log.e("EXception!!", "BAAD!")
+                Log.e("EXception!!", "${e}")
+                errorMessage.value = "An unexpected error occurred. Please try closing the app and then reopening it. Sorry for this"
+                dialogTitle.value = "ERROR"
             }
-            /*
-
-
-    @ColumnInfo(name = "underlying") var symbolName: String
-)
-             */
-
-            /*contractsRepository.insertTempToken(temporaryTokens = TemporaryTokens(
-                userTradeAccountNo = e.asJsonObject.get("loginid").toString(),
-                userTradeAuthToken = "HEEEEY"
-            ))*/
-
             _messages.value = message
         }
+    }
+
+    fun fireUnexpectedError() = viewModelScope.launch(Dispatchers.Main) {
+        errorMessage.value = "SOCKET!!"
+        dialogTitle.value = "ERROR"
+        openDialogError.value = true
+    }
+
+    fun reconnectIT(){
+        authWSlistener = MainSocket(this)
+
+        //initialize session
+        authWebSocket = okHttpClient.newWebSocket(initWebSocketSession(), authWSlistener)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"authorize\": \"${userAuthTokenTemp.value}\"\n" +
+                    "}"
+        )
+        Thread.sleep(2000)
+        authWebSocket?.send(
+            "{\n" +
+                    "  \"balance\": 1,\n" +
+                    "  \"subscribe\": 1\n" +
+                    "}"
+        )
     }
 
     fun setStatus(status: Boolean) = viewModelScope.launch(Dispatchers.Main) {
