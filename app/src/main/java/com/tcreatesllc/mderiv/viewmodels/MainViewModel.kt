@@ -458,7 +458,6 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
         _socketStatus.value = status
     }
 
-
      fun getRecentTenPos(loginID: String) = viewModelScope.launch(Dispatchers.Main) {
          Log.i("getRecentTenPoS", "FIRED ${loginID}")
 
@@ -533,7 +532,6 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
              //listOpenPositions.values = recentTenPositions
 
      }
-
 
     private companion object {
         const val MULTI_ENTRIES_COMBINED = 3
