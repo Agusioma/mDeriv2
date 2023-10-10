@@ -87,13 +87,39 @@ class MainActivity : ComponentActivity() {
 
         }
 
-        mainViewModel.cancelIt.observe(this) {
-            if (mainViewModel.cancelIt.value == true) {
+       /* mainViewModel.cancelIt.observe(this) {
+            if (it == true) {
+                Log.i("cancelIt","$it")
                 mainViewModel.clickedContractID.observe(this) {
                     cancelMultiplier(it)
+                    mainViewModel.cancelIt.value == false
                 }
             }
-        }
+        }*/
+
+
+            mainViewModel.cancelIt.observe(this) {
+                if(it == true){
+                    //mainViewModel.cancelIt.value = false
+                    Log.i("cancelIt2","${mainViewModel.cancelIt.value}")
+                    authWebSocket?.send(
+                        "{\n" +
+                                "  \"sell\": ${mainViewModel.clickedContractID.value},\n" +
+                                "  \"price\": 0\n" +
+                                "}"
+                    )
+                    var textYou = "{\n" +
+                            "  \"sell\": ${mainViewModel.cancelIt.value},\n" +
+                            "  \"price\": 0\n" +
+                            "}"
+
+                    Log.d("MUL_MUL", textYou)
+                    mainViewModel.cancelIt.value = false
+                    Log.i("cancelIt3","${mainViewModel.cancelIt.value}")
+                }
+            }
+
+
 
         mainViewModel.subcribeIt.observe(this) {
             if (mainViewModel.subcribeIt.value == true) {
@@ -242,12 +268,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun cancelMultiplier(contractID: String) {
+        mainViewModel.cancelIt.value = false
+        Log.i("cancelIt2","${mainViewModel.cancelIt.value}")
         authWebSocket?.send(
             "{\n" +
                     "  \"sell\": $contractID,\n" +
                     "  \"price\": 0\n" +
                     "}"
         )
+
 
         var textYou = "{\n" +
                 "  \"sell\": $contractID,\n" +
@@ -256,7 +285,7 @@ class MainActivity : ComponentActivity() {
 
         Log.d("MUL_MUL", textYou)
 
-        mainViewModel.tradeIt.value = false
+
 
     }
 
