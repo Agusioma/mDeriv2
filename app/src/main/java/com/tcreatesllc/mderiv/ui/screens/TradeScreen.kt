@@ -22,6 +22,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
@@ -58,6 +60,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalTextInputService
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -292,7 +295,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
           */
             Spacer(Modifier.weight(3f))
 
-            TextTitleCaptionSmall("${accBalance.value} ${accCurr.value}", txtTitleMods)
+            TextTitleCaptionSmallBold("${accBalance.value} ${accCurr.value}", txtTitleMods)
             // box
             ExposedDropdownMenuBox(
                 modifier = Modifier.wrapContentSize(),
@@ -618,6 +621,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
             }
             Spacer(Modifier.weight(3f))
             ExtendedFloatingActionButton(
+                containerColor = colorResource(id = R.color.red),
+                contentColor  = colorResource(id = R.color.white),
                 onClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
@@ -924,6 +929,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                     ) {
 
                         ExtendedFloatingActionButton(
+
+                            containerColor = colorResource(id = R.color.red),
+                            contentColor  = colorResource(id = R.color.white),
                             onClick = {
                                 mainViewModel.textOption.value = "MULTDOWN"
 
@@ -966,6 +974,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         )
                         Spacer(Modifier.weight(3f))
                         ExtendedFloatingActionButton(
+
+                            containerColor = colorResource(id = R.color.green),
+                            contentColor  = colorResource(id = R.color.white),
                             onClick = {
                                 mainViewModel.textOption.value = "MULTUP"
                                 if (textSP == "") {
@@ -1262,6 +1273,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 )
                         ) {
                             Button(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.green),
+                                    contentColor  = colorResource(id = R.color.white)),
                                 onClick = {
                                     showBottomSheet2 = false
                                 },
@@ -1271,6 +1285,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                             Spacer(Modifier.weight(3f))
                             Button(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(id = R.color.red),
+                                    contentColor  = colorResource(id = R.color.white)),
                                 onClick = {
                                     mainViewModel.cancelIt.value = true
                                     dummyText = "Sold. Check its sell details on the left."
@@ -1329,6 +1346,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                          )*/
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.green),
+                                contentColor  = colorResource(id = R.color.white)),
                             shape = RectangleShape,
                             onClick = {
                                 openDialog.value = false
@@ -1378,6 +1398,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.green),
+                                contentColor  = colorResource(id = R.color.white)),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogError.value = false
@@ -1432,6 +1455,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                          )*/
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.green),
+                                contentColor  = colorResource(id = R.color.white)),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogInfoDummy.value = false
@@ -1481,6 +1507,9 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                          )*/
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.green),
+                                contentColor  = colorResource(id = R.color.white)),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogInfoDummy2.value = false

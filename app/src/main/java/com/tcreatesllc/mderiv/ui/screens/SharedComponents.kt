@@ -48,7 +48,7 @@ fun TextTitleCaptionSmall(caption: String,
 ){
     Text(
         text = caption,
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.tertiary,
         fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
@@ -77,7 +77,7 @@ fun TextSubTitle(caption: String,
 ) {
     Text(
         text = caption,
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.tertiary,
         fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
@@ -91,7 +91,7 @@ fun TextSubTitleBold(caption: String,
 ) {
     Text(
         text = caption,
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.secondary,
         fontFamily = mDerivDigitFamily,
         modifier = mods,
         fontWeight = FontWeight.Bold,
