@@ -19,7 +19,7 @@ fun TextTitle(caption: String,
     Text(
         text = caption,
         color = MaterialTheme.colorScheme.primary,
-        fontFamily = mDerivTextFamily,
+        fontFamily = mDerivDigitFamily,
         modifier = mods,
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
