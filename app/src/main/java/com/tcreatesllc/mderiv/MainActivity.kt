@@ -379,6 +379,7 @@ class MainActivity : ComponentActivity() {
         Log.d("MUL_MUL", textYou)
 
         mainViewModel.tradeIt.value = false
+        mainViewModel.textStake.value = null
 
     }
 

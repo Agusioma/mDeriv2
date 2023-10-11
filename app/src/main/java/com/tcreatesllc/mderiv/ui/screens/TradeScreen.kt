@@ -662,7 +662,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
             ModalBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height((screenHeight * 0.97).dp)
+                    .height((screenHeight * 1).dp)
                     .padding(top = 0.dp),
                 onDismissRequest = {
                     showBottomSheet = false
