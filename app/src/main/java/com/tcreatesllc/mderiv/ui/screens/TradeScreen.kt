@@ -214,6 +214,10 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
         mutableStateOf(listItemsMultipliers[0])
     }
 
+    var btnCheckStatus by remember {
+        mutableStateOf(false)
+    }
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -249,6 +253,17 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
         openDialogError.value = true
         openDialog.value = false
     }
+
+    if (mainViewModel.btnCheckStatus.observeAsState().value == true) {
+        btnCheckStatus = true
+    }else{
+        btnCheckStatus =  false
+    }
+
+    /*if (mainViewModel.openDialog.observeAsState()
+        openDialog.value = true
+        //openDialog.value = false
+    }*/
 
 
     //var listYou: List<TransactionDetails> = listOf(recentTenOpenPositions) as List<TransactionDetails>
@@ -488,14 +503,11 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 mainViewModel.stopIt.value = true
                                 mainViewModel.subcribeIt.value = true
 
-                                dummyText = clickedContractList.get(11).replaceFirstChar {
+                                /*dummyText = clickedContractList.get(11).replaceFirstChar {
                                     if (it.isLowerCase()) it.titlecase(
                                         Locale.ROOT
                                     ) else it.toString()
-                                }
-                                if (dummyText !== "Open") {
-                                    openDialogInfoDummy2.value = true
-                                }
+                                }*/
 
 
                             },
@@ -955,6 +967,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 } else {
                                     openDialog.value = true
                                 }
+
                             },
                             shape = RectangleShape,
                             icon = {
@@ -1186,6 +1199,15 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                         )
                                     }
 
+                                    if(holderListContract.value?.get(11).toString() == "open"){
+
+                                        mainViewModel.btnCheckStatus.value = true
+                                        //Log.i("buy_ResponseF1TS", "${mainViewModel.btnCheckStatus.value} ${holderListContract.value?.get(11).toString()}")
+                                    }else{
+                                        mainViewModel.btnCheckStatus.value = false
+                                        //Log.i("buy_ResponseF2TS", "${mainViewModel.btnCheckStatus.value} $")
+                                    }
+
                                     mainViewModel.textProfitOrLoss.observeAsState().value?.let {
                                         mainViewModel.textStatus.observeAsState().value?.let { it1 ->
                                             Balance(
@@ -1285,6 +1307,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                             Spacer(Modifier.weight(3f))
                             Button(
+                                enabled = btnCheckStatus,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(id = R.color.red),
                                     contentColor  = colorResource(id = R.color.white)),
@@ -1335,7 +1358,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         TextSubTitleBold("SUCCESS", txtTitleModsCenter)
                         Spacer(modifier = Modifier.height(15.dp))
                         TextSubTitle(
-                            "Your trade has been placed successfully. Close this dialog and click on View details to view the trade's realtime updates",
+                            "Your trade has been placed. If successful, you can view the trade's realtime updates by clicking on View details on the left panel",
                             txtTitleModsCenter
                         )
 
@@ -1351,6 +1374,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                 contentColor  = colorResource(id = R.color.white)),
                             shape = RectangleShape,
                             onClick = {
+
                                 openDialog.value = false
                             }
                         ) {

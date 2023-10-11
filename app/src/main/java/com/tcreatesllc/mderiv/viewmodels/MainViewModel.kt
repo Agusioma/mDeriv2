@@ -1,5 +1,6 @@
 package com.tcreatesllc.mderiv.viewmodels
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
@@ -71,6 +72,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     var textStatus: MutableLiveData<String> = MutableLiveData("0")
     var boolFire: MutableLiveData<Boolean> = MutableLiveData(false)
     var refreshIt: MutableLiveData<Boolean> = MutableLiveData(false)
+    var toLogIN: MutableLiveData<Boolean> = MutableLiveData(false)
     var refreshBalance: MutableLiveData<Boolean> = MutableLiveData(false)
     var stopIt: MutableLiveData<Boolean> = MutableLiveData(false)
     var tempList: MutableSet<Map<String, String>> = mutableSetOf()
@@ -126,8 +128,11 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
     )
 
     var openDialogError: MutableLiveData<Boolean> = MutableLiveData(false)
+    var openDialog: MutableLiveData<Boolean> = MutableLiveData(false)
     var errorMessage: MutableLiveData<String> = MutableLiveData("")
     var dialogTitle: MutableLiveData<String> = MutableLiveData("")
+
+    var btnCheckStatus: MutableLiveData<Boolean> = MutableLiveData(false)
 
     internal val customStepChartEntryModelProducer: ChartEntryModelProducer =
         ChartEntryModelProducer()
@@ -339,6 +344,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                     symbolName = buy_echo_req.get("parameters").asJsonObject.get("symbol").asString
                 )
             )
+            //openDialog.value =  true
             /*
 
 
@@ -365,6 +371,9 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                 openDialogError.value = false
             } else if (errorMessageRes == "Unknown contract sell proposal.") {
                 openDialogError.value = false
+            } else if (errorMessageRes == "Please log in.") {
+                openDialogError.value = false
+                toLogIN.value = true
             }else{
                 openDialogError.value = true
             }
@@ -383,9 +392,20 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                 var buy_Response = parser.get("proposal_open_contract").asJsonObject
                 var buy_echo_req = parser.get("echo_req").asJsonObject
 
+
+
                 if (buy_Response.get("status").isJsonNull) {
                     Log.i("CLOSED!", "Contract not open")
                 }else{
+                    Log.i("buy_Response", "${buy_Response.get("status").asString}")
+                   if(buy_Response.get("status").asString == "open"){
+
+                       btnCheckStatus.value = true
+                       Log.i("buy_ResponseF1", "${btnCheckStatus.value}")
+                   }else{
+                       btnCheckStatus.value = false
+                       Log.i("buy_ResponseF2", "${btnCheckStatus.value}")
+                   }
                     try {
                         prevSubscriptionID.value =
                             parser.get("subscription").asJsonObject.get("id").asString
@@ -405,7 +425,7 @@ class MainViewModel(private val contractsRepository: ContractsRepository) : View
                     } else {
                         buy_Response.get("status").asString
                     },
-                    entry_spot = buy_Response.get("entry_spot").asString
+                    entry_spot = if (buy_Response.get("entry_spot").isJsonNull) { "0"}else{buy_Response.get("entry_spot").asString}
                 )
 
                 clickedContractThresholdMarker.value = buy_Response.get("entry_spot").asFloat

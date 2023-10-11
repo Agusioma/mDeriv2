@@ -18,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.JsonParser
@@ -51,7 +52,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         container = AppDataContainer(this)
-        handleIntent(intent)
+        intent.extras?.getString("LINK")?.let { handleIntent(it) }
+
         //  mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         //  mainViewModel = ViewModelProvider(this).get( )
 
@@ -64,6 +66,15 @@ class MainActivity : ComponentActivity() {
             if (mainViewModel.tradeIt.value == true) {
                 //stopSubscription()
                 tradeMultiplier()
+            }
+        }
+
+        mainViewModel.toLogIN.observe(this) {
+            if (mainViewModel.toLogIN.value == true) {
+                //stopSubscription()
+                val i = Intent(this, LoginActivity::class.java)
+                // i.putExtra("LINK",appLinkData.toString() )
+                startActivity(i)
             }
         }
 
@@ -423,16 +434,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleIntent(intent)
+        //handleIntent(intent)
     }
 
 
-    private fun handleIntent(intent: Intent) {
+    private fun handleIntent(link: String) {
        //. mainViewModel
+        Log.i("appLinkData2", "${link}")
         try {
             mainViewModel.clearAuthDB()
             var accTokenMapping: MutableMap<String, String> = mutableMapOf()
-            val appLinkData: Uri? = intent.data
+            val appLinkData: Uri? = link.toUri()
+           // link.toUri()
             mainViewModel.userLoginID.value = "\"${appLinkData?.getQueryParameter("acct1")}\""
             mainViewModel.userAuthTokenTemp.value = appLinkData?.getQueryParameter("token1")
             // val v = uri.getQueryParameter("v")

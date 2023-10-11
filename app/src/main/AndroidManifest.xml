@@ -20,6 +20,9 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MDeriv">
+            <tools:validation testUrl="http://dtraders.vercel.app" />
+            <tools:validation testUrl="https://dtraders.vercel.app" />
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
