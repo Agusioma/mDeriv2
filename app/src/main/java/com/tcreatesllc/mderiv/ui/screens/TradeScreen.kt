@@ -1379,7 +1379,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                         ) {
                             Text(
-                                "OK, close this",
+                                "OK, dismiss this",
                                 fontFamily = mDerivDigitFamily,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -1433,7 +1433,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                         ) {
                             Text(
-                                "OK, close this",
+                                "OK, dismiss this",
                                 fontFamily = mDerivDigitFamily,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -1488,7 +1488,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                         ) {
                             Text(
-                                "OK, close this",
+                                "OK, dismiss this",
                                 fontFamily = mDerivDigitFamily,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -1540,7 +1540,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             }
                         ) {
                             Text(
-                                "OK, close this",
+                                "OK, dismiss this",
                                 fontFamily = mDerivDigitFamily,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold

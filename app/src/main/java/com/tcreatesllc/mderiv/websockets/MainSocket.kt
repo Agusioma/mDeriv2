@@ -42,6 +42,7 @@ class MainSocket(
                 mainViewModel.updateContractDetails(text)
 
             }
+
         } else {
             mainViewModel.addErrorMessage(text)
         }
