@@ -218,6 +218,10 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
         mutableStateOf(false)
     }
 
+    var btnTradeCheckStatus by remember {
+        mutableStateOf(false)
+    }
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -256,8 +260,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
 
     if (mainViewModel.btnCheckStatus.observeAsState().value == true) {
         btnCheckStatus = true
-    }else{
-        btnCheckStatus =  false
+    } else {
+        btnCheckStatus = false
     }
 
     /*if (mainViewModel.openDialog.observeAsState()
@@ -634,7 +638,7 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
             Spacer(Modifier.weight(3f))
             ExtendedFloatingActionButton(
                 containerColor = colorResource(id = R.color.red),
-                contentColor  = colorResource(id = R.color.white),
+                contentColor = colorResource(id = R.color.white),
                 onClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
@@ -941,32 +945,36 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                     ) {
 
                         ExtendedFloatingActionButton(
-
                             containerColor = colorResource(id = R.color.red),
-                            contentColor  = colorResource(id = R.color.white),
+                            contentColor = colorResource(id = R.color.white),
                             onClick = {
                                 mainViewModel.textOption.value = "MULTDOWN"
 
-                                if (textSP == "") {
-                                    mainViewModel.textSP.value = "0.0"
-                                } else {
+                                if (textSP !== null) {
                                     mainViewModel.textSP.value = textSP
+                                } else {
+                                    mainViewModel.textSP.value = "0.10"
+
                                 }
 
-                                if (textSL == "") {
-                                    mainViewModel.textSL.value = "0.0"
-                                } else {
+                                if (textSL !== null) {
                                     mainViewModel.textSL.value = textSL
+                                } else {
+                                    mainViewModel.textSL.value = "0.10"
+                                }
+                                if (mainViewModel.textStake.value?.isNotEmpty() == true) {
+                                    mainViewModel.tradeIt.value = true
+                                    mainViewModel.stopIt.value = true
+                                    showBottomSheet = false
+                                    if (openDialogError.value == true) {
+                                        openDialog.value = false
+                                    } else {
+                                        openDialog.value = true
+                                    }
+                                } else {
+                                    openDialogInfoDummy.value = true
                                 }
 
-                                mainViewModel.tradeIt.value = true
-                                mainViewModel.stopIt.value = true
-                                showBottomSheet = false
-                                if (openDialogError.value == true) {
-                                    openDialog.value = false
-                                } else {
-                                    openDialog.value = true
-                                }
 
                             },
                             shape = RectangleShape,
@@ -989,29 +997,34 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         ExtendedFloatingActionButton(
 
                             containerColor = colorResource(id = R.color.green),
-                            contentColor  = colorResource(id = R.color.white),
+                            contentColor = colorResource(id = R.color.white),
                             onClick = {
                                 mainViewModel.textOption.value = "MULTUP"
-                                if (textSP == "") {
-                                    mainViewModel.textSP.value = "0.10"
-                                } else {
+                                if (textSP !== null) {
                                     mainViewModel.textSP.value = textSP
+                                } else {
+                                    mainViewModel.textSP.value = "0.10"
+
                                 }
 
-                                if (textSL == "") {
-                                    mainViewModel.textSL.value = "0.10"
-                                } else {
+                                if (textSL !== null) {
                                     mainViewModel.textSL.value = textSL
+                                } else {
+                                    mainViewModel.textSL.value = "0.10"
+                                }
+                                if (mainViewModel.textStake.value?.isNotEmpty() == true) {
+                                    mainViewModel.tradeIt.value = true
+                                    mainViewModel.stopIt.value = true
+                                    showBottomSheet = false
+                                    if (openDialogError.value == true) {
+                                        openDialog.value = false
+                                    } else {
+                                        openDialog.value = true
+                                    }
+                                } else {
+                                    openDialogInfoDummy.value = true
                                 }
 
-                                mainViewModel.tradeIt.value = true
-                                mainViewModel.stopIt.value = true
-                                showBottomSheet = false
-                                if (openDialogError.value == true) {
-                                    openDialog.value = false
-                                } else {
-                                    openDialog.value = true
-                                }
                             },
                             shape = RectangleShape,
                             icon = {
@@ -1199,11 +1212,11 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                                         )
                                     }
 
-                                    if(holderListContract.value?.get(11).toString() == "open"){
+                                    if (holderListContract.value?.get(11).toString() == "open") {
 
                                         mainViewModel.btnCheckStatus.value = true
                                         //Log.i("buy_ResponseF1TS", "${mainViewModel.btnCheckStatus.value} ${holderListContract.value?.get(11).toString()}")
-                                    }else{
+                                    } else {
                                         mainViewModel.btnCheckStatus.value = false
                                         //Log.i("buy_ResponseF2TS", "${mainViewModel.btnCheckStatus.value} $")
                                     }
@@ -1297,20 +1310,26 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             Button(
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(id = R.color.green),
-                                    contentColor  = colorResource(id = R.color.white)),
+                                    contentColor = colorResource(id = R.color.white)
+                                ),
                                 onClick = {
                                     showBottomSheet2 = false
                                 },
                                 shape = RectangleShape,
                             ) {
-                                Text(text = "Back", fontFamily = mDerivDigitFamily, fontSize = 20.sp)
+                                Text(
+                                    text = "Back",
+                                    fontFamily = mDerivDigitFamily,
+                                    fontSize = 20.sp
+                                )
                             }
                             Spacer(Modifier.weight(3f))
                             Button(
                                 enabled = btnCheckStatus,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(id = R.color.red),
-                                    contentColor  = colorResource(id = R.color.white)),
+                                    contentColor = colorResource(id = R.color.white)
+                                ),
                                 onClick = {
                                     mainViewModel.cancelIt.value = true
                                     dummyText = "Sold. Check its sell details on the left."
@@ -1371,7 +1390,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.green),
-                                contentColor  = colorResource(id = R.color.white)),
+                                contentColor = colorResource(id = R.color.white)
+                            ),
                             shape = RectangleShape,
                             onClick = {
 
@@ -1424,7 +1444,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.green),
-                                contentColor  = colorResource(id = R.color.white)),
+                                contentColor = colorResource(id = R.color.white)
+                            ),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogError.value = false
@@ -1465,10 +1486,10 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        TextSubTitleBold("INFO", txtTitleModsCenter)
+                        TextSubTitleBold("FAILED", txtTitleModsCenter)
                         Spacer(modifier = Modifier.height(15.dp))
                         TextSubTitle(
-                            "Your have successfully changed your trading accounts. Current account is ${selectedItem}.",
+                            "Please enter a stake amount",
                             txtTitleModsCenter
                         )
 
@@ -1481,7 +1502,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.green),
-                                contentColor  = colorResource(id = R.color.white)),
+                                contentColor = colorResource(id = R.color.white)
+                            ),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogInfoDummy.value = false
@@ -1533,7 +1555,8 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                         Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.green),
-                                contentColor  = colorResource(id = R.color.white)),
+                                contentColor = colorResource(id = R.color.white)
+                            ),
                             shape = RectangleShape,
                             onClick = {
                                 openDialogInfoDummy2.value = false
