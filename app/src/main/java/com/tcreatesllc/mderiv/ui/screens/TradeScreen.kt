@@ -950,14 +950,14 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             onClick = {
                                 mainViewModel.textOption.value = "MULTDOWN"
 
-                                if (textSP !== null) {
+                                if (textSP.isNotEmpty() == true) {
                                     mainViewModel.textSP.value = textSP
                                 } else {
                                     mainViewModel.textSP.value = "0.10"
 
                                 }
 
-                                if (textSL !== null) {
+                                if (textSL.isNotEmpty() == true) {
                                     mainViewModel.textSL.value = textSL
                                 } else {
                                     mainViewModel.textSL.value = "0.10"
@@ -1000,14 +1000,14 @@ fun TradeScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                             contentColor = colorResource(id = R.color.white),
                             onClick = {
                                 mainViewModel.textOption.value = "MULTUP"
-                                if (textSP !== null) {
+                                if (textSP.isNotEmpty() == true) {
                                     mainViewModel.textSP.value = textSP
                                 } else {
                                     mainViewModel.textSP.value = "0.10"
 
                                 }
 
-                                if (textSL !== null) {
+                                if (textSL.isNotEmpty() == true) {
                                     mainViewModel.textSL.value = textSL
                                 } else {
                                     mainViewModel.textSL.value = "0.10"

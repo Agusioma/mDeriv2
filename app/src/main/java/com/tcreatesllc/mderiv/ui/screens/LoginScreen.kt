@@ -188,7 +188,7 @@ fun LoginScreen(mainViewModel: MainViewModel = viewModel(factory = AppViewModelP
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val context = LocalContext.current
-                val intent = remember { Intent(Intent.ACTION_VIEW, Uri.parse("https://oauth.binary.com/oauth2/authorize?app_id=38697")) }
+                val intent = remember { Intent(Intent.ACTION_VIEW, Uri.parse("https://oauth.deriv.com/oauth2/authorize?app_id=38697")) }
 
                 Button(
                     colors = ButtonDefaults.buttonColors(
